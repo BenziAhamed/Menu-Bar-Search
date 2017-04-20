@@ -4,6 +4,70 @@
 import Foundation
 import Cocoa
 
+struct TextSearch {
+    
+    let term: String
+    var regex: NSRegularExpression?
+    
+    init(term: String) {
+        self.term = term
+        if term.characters.count <= 1 {
+            regex = nil
+        }
+        else {
+            // given a search term ab
+            // we want to match all text with words starting a and b one after another
+            // ... a.* b.* ...
+            // the words may appear anywhere within the search text
+            let pattern = term
+            .characters
+            .map { "[\($0)][^\\s]*" } // match a word with starting letter of interest
+            .joined(separator: "\\s")
+            let s = term.characters.first!
+            // start with first letter as long as its at a word boundary
+            let final = "^[^\(s)]*\\b\(pattern).*$"
+            regex = try? NSRegularExpression(pattern: final, options: [])
+        }
+    }
+    
+
+    // returns a ranked for a given item, based on the text specified
+    // text ranking is as follows:
+    // if text starts with the term, rank = 100 (best match)
+    // if text succeeds with fuzzy match, rank = 20
+    // if text contains term, rank = 10
+    // else rank = 0
+    func rank<T>(item: T, for text: String) -> (T, Int) {
+        
+        // text starts with term, best match
+        if text.hasPrefix(term) {
+            return (item, 100)
+        }
+        
+        // fuzzy search
+        if term.characters.count > 1, text.characters.count >= term.characters.count, let regex = regex {
+            if regex.numberOfMatches(
+                in: text,
+                options: [],
+                range: .init(location: 0, length: text.characters.count)
+                ) > 0 {
+                return (item, 20)
+            }
+        }
+        
+        // contains text someplace
+        if text.contains(term) {
+            return (item, 10)
+        }
+        
+        // no match
+        return (item, 0)
+    }
+    
+}
+
+
+
 class Alfred {
     
     let results = NSMutableArray()
@@ -108,8 +172,13 @@ func getAttribute(element: AXUIElement, name: String) -> CFTypeRef? {
 struct MenuItem {
 
     var path: [String]
+    var pathIndices: String
     var shortcut: String? = nil
     
+    var arg: String {
+        return "[\(pathIndices)]"
+    }
+
     var uid: String {
         return path.joined(separator: ">")
     }
@@ -118,25 +187,6 @@ struct MenuItem {
         return path[0] == "Apple" 
     }
 
-    var arg: String {
-        var i = path.endIndex - 1
-        var a = "menu item \"\(path[i])\""
-        i -= 1
-        while i >= 0 {
-            let current = path[i]
-            if i > 0 {
-                // http://stackoverflow.com/questions/12121803/applescript-to-open-open-recent-file
-                a.append(" of menu \"\(current)\" of menu item \"\(current)\"")
-            }
-            else {
-                a.append(" of menu \"\(current)\"")   
-            }
-            i -= 1
-        }
-        a.append(" of menu bar item \"\(path[0])\" of menu bar 1")
-        return a
-    }
-    
     var subtitle: String {
         var p = path
         p.removeLast()
@@ -145,24 +195,27 @@ struct MenuItem {
     
     var title: String {
         return path.last!
-    }
-    
-    func contains(filter: String) -> Bool {
-        for i in path.indices.reversed() {
-            if path[i].lowercased().contains(filter) {
-                return true
-            }
-        }
-        return false
-    }
+    }    
 }
 
 
+func clickMenu(menu element: AXUIElement, pathIndices: [Int], currentIndex: Int) {
+    guard let menuBarItems = getAttribute(element: element, name: kAXChildrenAttribute) as? [AXUIElement], menuBarItems.count > 0 else { return }
+    let itemIndex = pathIndices[currentIndex]
+    let child = menuBarItems[itemIndex]
+    if currentIndex == pathIndices.count - 1 {
+        AXUIElementPerformAction(child, kAXPressAction as CFString)
+        return
+    }
+    guard let menuBar = getAttribute(element: child, name: kAXChildrenAttribute) as? [AXUIElement] else { return }
+    clickMenu(menu: menuBar[0], pathIndices: pathIndices, currentIndex: currentIndex + 1)
+}
+
 func getMenuItems(
     forElement element: AXUIElement,
-    bundleIdentifier: String,
     menuItems: inout [MenuItem],
     path: [String] = [],
+    pathIndices: String = "",
     depth: Int = 0,
     maxDepth: Int = 10,
     maxChildren: Int = 20
@@ -170,7 +223,8 @@ func getMenuItems(
     guard depth < maxDepth else { return }
     guard let children = getAttribute(element: element, name: kAXChildrenAttribute) as? [AXUIElement], children.count > 0 else { return }
     var processedChildrenCount = 0
-    for child in children {
+    for i in children.indices {
+        let child = children[i]
         guard let enabled = getAttribute(element: child, name: kAXEnabledAttribute) as? Bool, enabled else { continue }
         guard let name = getAttribute(element: child, name: kAXTitleAttribute) as? String else { continue }
         guard !name.isEmpty else { continue }
@@ -180,9 +234,9 @@ func getMenuItems(
             // sub-menu item, scan children
             getMenuItems(
                 forElement: children[0],
-                bundleIdentifier: bundleIdentifier,
                 menuItems: &menuItems,
                 path: path + [name],
+                pathIndices: pathIndices.isEmpty ? "\(i)" : pathIndices + ",\(i)",
                 depth: depth + 1
             )
         }
@@ -227,7 +281,11 @@ func getMenuItems(
                 return shortcut
             }
 
-            menuItems.append(MenuItem(path: path + [name], shortcut: getShortcut(cmd, modifiers, virtualKey)))
+            menuItems.append(MenuItem(
+                path: path + [name],
+                pathIndices: pathIndices.isEmpty ? "\(i)" : pathIndices + ",\(i)",
+                shortcut: getShortcut(cmd, modifiers, virtualKey)
+            ))
         }
         
         processedChildrenCount += 1
@@ -240,10 +298,22 @@ func getMenuItems(
 
 
 // process command line args
-// -query ""
-// -pid ""
-var query: String = ""
+// every argument is optional
+// [-query <filter>] - filter menu listing based on filter
+// [-pid <id>] - target app with specified pid, if none, menubar owning app is detected
+// [-max-depth <depth:10>]  - max traversal depth of app menu
+// [-max-children <count:20>] -  max set of child menu items to process under parent menu
+// -reorder-apple-menu (true|false:true) - by default, orders Apple menu items to the last
+// -learning  (true|false:true)
+// -click <json_index_path_to_menu_item> - clicks the menu path for the given pid app
+
+var query = ""
 var pid: Int32 = -1
+var maxDepth = 10
+var maxChildren = 20
+var reorderAppleMenuToLast = true
+var learning = true
+var clickIndices: [Int]? = nil
 
 var i = 1 // skip name of program
 var current: String? {
@@ -252,29 +322,70 @@ var current: String? {
 func advance() {
     i += 1
 }
+
+let createInt:(String)->Int? = { Int($0) }
+let createInt32:(String)->Int32? = { Int32($0) }
+let createBool:(String)->Bool? = { Bool($0) }
+
+func parse<T>(_ create: (String)->T?, _ error: String) -> T {
+    if let arg = current, let value = create(arg) {
+        advance()
+        return value
+    }
+    Alfred.quit(error)
+}
+
 while let arg = current {
     switch arg {
+
         case "-pid":
             advance()
-            if let arg = current, let value = Int32(arg) {
-                pid = value
-                advance()
-            }
-            else {
-                Alfred.quit("Expected value after -pid arg")
-            }
+            pid = parse(createInt32, "Expected integer after -pid")
+
         case "-query":
             advance()
             if let arg = current {
                 advance()
                 query = arg.lowercased()
             }
+
+        case "-max-depth":
+            advance()
+            maxDepth = parse(createInt, "Expected integer after -max-depth")
+
+        case "-max-children":
+            advance()
+            maxChildren = parse(createInt, "Expected integer after -max-children")
+
+        case "-reorder-apple-menu":
+            advance()
+            reorderAppleMenuToLast = parse(createBool, "Expected true/false after -reorder-apple-menu")
+
+        case "-learning":
+            advance()
+            learning = parse(createBool, "Expected true/false after -learning")
+
+        case "-click":
+            advance()
+            guard let pathJson = current,
+                   let data = pathJson.data(using: .utf8),
+                   let jsonObject = try? JSONSerialization.jsonObject(with: data, options: [.mutableContainers]),
+                   let pathIndices = jsonObject as? [Int]
+                    else {
+                        Alfred.quit("Not able to parse argument after -click \(CommandLine.arguments)")
+                        break
+                    }
+            
+            advance()
+            clickIndices = pathIndices
+
         default:
             // unknown command line option
             advance()
     }
 }
 
+// get application details
 
 var app: NSRunningApplication? = nil
 if pid == -1 {
@@ -291,36 +402,84 @@ guard let app = app,
             Alfred.quit("Unable to get app info")
         }
 let appPath  = appUrl.path
-
 let axApp = AXUIElementCreateApplication(app.processIdentifier)
+
+// try to get a reference to the menu bar
 
 var menuBarValue: CFTypeRef? = nil
 let result = AXUIElementCopyAttributeValue(axApp, kAXMenuBarAttribute as CFString, &menuBarValue)
 switch result {
-    case .apiDisabled:
-        Alfred.quit("Assistive applications are not enabled in System Preferences.", "Is accessibility enabled for Alfred?")    
-    case .noValue:
-        Alfred.quit("No menu bar", "\(appName) does not have a native menu bar")
+
     case .success:
         break
+
+    case .apiDisabled:
+        Alfred.quit("Assistive applications are not enabled in System Preferences.", "Is accessibility enabled for Alfred?")    
+
+    case .noValue:
+        Alfred.quit("No menu bar", "\(appName) does not have a native menu bar")
+
     default:
         Alfred.quit("Could not get menu bar", "An error occured \(result.rawValue)")    
 }
 
+// try to get all menu items
+
 let menuBar = menuBarValue as! AXUIElement
 
+// if we need to click a menu path
+// then do that
+if let clickIndices = clickIndices {
+    clickMenu(menu: menuBar, pathIndices: clickIndices, currentIndex: 0)
+    exit(0)
+}
+
+
 var menuItems = [MenuItem]()
-getMenuItems(forElement: menuBar, bundleIdentifier: app.bundleIdentifier!, menuItems: &menuItems)
+getMenuItems(
+    forElement: menuBar, 
+    menuItems: &menuItems, 
+    maxDepth: maxDepth, 
+    maxChildren: maxChildren
+    )
+
+
+// filter menu items and render result
 
 let a = Alfred()
 
 if !query.isEmpty {
-    menuItems = menuItems.filter { $0.contains(filter: query) }
+
+    let search = TextSearch(term: query.lowercased())
+    
+    menuItems = menuItems
+        .map { (menu: MenuItem) -> (MenuItem, Int) in
+            // finds the first ranked path component
+            // if we have File -> New Tab
+            // and we enter "file", we must match "file"
+            // we enter "nt", we must match "new tab"
+            // work our way starting from the leaf menu path
+            // and upwards until a ranked match is found
+            for i in menu.path.indices.reversed() {
+                let r = search.rank(item: menu, for: menu.path[i].lowercased())
+                if r.1 > 0 {
+                    return r
+                }
+            }
+            return (menu, 0)
+        }
+        // filter and sort out ranked items
+        // higher rank means better match
+        .filter { $0.1 > 0 }
+        .sorted(by: { $0.0.1 > $0.1.1 })
+        .map { $0.0 }
 }
-else {
+else if reorderAppleMenuToLast {
     // rearrange so that Apple menu items are last
-    menuItems = menuItems.filter { $0.path[0] != "Apple" } + menuItems.filter { $0.path[0] == "Apple" }
+    menuItems = menuItems.filter { !$0.appleMenuItem } + menuItems.filter { $0.appleMenuItem }
 }
+
+
 if menuItems.isEmpty {
     a.add(title: "No menu items")
 }
@@ -328,8 +487,8 @@ else {
     menuItems.forEach { 
         let apple = $0.appleMenuItem
         a.add(
-            uid: "\(appName)>\($0.uid)", 
-            title: $0.shortcut != nil ? "\($0.title) - \($0.shortcut!)" : $0.title, 
+            uid: learning ? "\(appName)>\($0.uid)" : nil, 
+            title: ($0.shortcut != nil ? "\($0.title) - \($0.shortcut!)" : $0.title), 
             subtitle: $0.subtitle, 
             arg: $0.arg, 
             iconPath: apple ? "apple-icon.png" : appPath,
@@ -339,6 +498,4 @@ else {
 }
 
 print(a.output())
-
-
 
