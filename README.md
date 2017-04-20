@@ -14,3 +14,5 @@ This is a slightly faster implementation of [ctwise's Menu Bar Search](https://w
 - 1.1.0 - Added Fuzzy Text Matching for Menus
 
   If you have a menu item `New Tab`, then typing `m nt` in Alfred will match `New Tab`, since `n` and `t` matches the first letters of the menu text.
+
+- 1.1.1 - Changed run behaviour to terminate previous script, this makes the experience slightly more faster
