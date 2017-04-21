@@ -18,3 +18,4 @@ This is a slightly faster implementation of [ctwise's Menu Bar Search](https://w
 - 1.1.1 - Changed run behaviour to terminate previous script, this makes the experience slightly more faster
 - 1.2 - Completely native menu clicking, removed reliance on AppleScript
 - 1.2.1 - Performance improvements when generating menus using direct JSON encoding
+- 1.2.2 - More performance improvements while filtering menu items
