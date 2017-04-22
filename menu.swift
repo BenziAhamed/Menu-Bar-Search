@@ -10,69 +10,46 @@ import Cocoa
 
 let fm = FileManager.default
 
-struct TextSearch {
+struct TextSearch {    
     
     let term: String
-    let regex: NSRegularExpression?
     
     init(term: String) {
         self.term = term
-        if term.characters.count <= 1 {
-            regex = nil
-        }
-        else {
-            // given a search term ab
-            // we want to match all text with words starting a and b one after another
-            // ... a.* b.* ...
-            // the words may appear anywhere within the search text
-            let pattern = term
-            .characters
-            .map { "[\($0)][^\\s]*" } // match a word with starting letter of interest
-            .joined(separator: "\\s")
-            let s = term.characters.first!
-            // start with first letter as long as its at a word boundary
-            let final = "^[^\(s)]*\\b\(pattern).*$"
-            regex = try? NSRegularExpression(pattern: final, options: [])
-        }
     }
-    
 
-    // returns a ranked for a given item, based on the text specified
-    // text ranking is as follows:
-    // if text starts with the term, rank = 100 (best match)
-    // if text succeeds with fuzzy match, rank = 20
-    // if text contains term, rank = 10
-    // else rank = 0
-    func rank<T>(item: T, for text: String) -> (T, Int) {
-        
-        // text starts with term, best match
+    func rank(for text: String) -> Int {
         if text.hasPrefix(term) {
-            return (item, 100)
+            return 100
         }
+        if text.contains(term) {
+            return 10
+        }
+        return 0
+    }
+}
+
+extension String {
+    var fuzzyIndex : String {
         
-        // fuzzy search
-        if term.characters.count > 1, text.characters.count >= term.characters.count, let regex = regex {
-            if regex.numberOfMatches(
-                in: text,
-                options: [],
-                range: .init(location: 0, length: text.characters.count)
-                ) > 0 {
-                return (item, 20)
+        var f = ""
+        let alphaNum = CharacterSet.alphanumerics
+        let whitespace = CharacterSet.whitespaces
+        
+        var waitingForSpace = false
+        for c in self.unicodeScalars {
+            if alphaNum.contains(c), !waitingForSpace {
+                f.append(String(c))
+                waitingForSpace = true
+            }
+            else if waitingForSpace, whitespace.contains(c) {
+                waitingForSpace = false
             }
         }
         
-        // contains text someplace
-        if text.contains(term) {
-            return (item, 10)
-        }
-        
-        // no match
-        return (item, 0)
+        return f
     }
-    
 }
-
-
 
 class Alfred {
 
@@ -222,12 +199,14 @@ struct MenuItem {
     var path: [String]
     var pathIndices: String
     var shortcut: String? = nil
+    var fuzzyIndex: String = ""
 
-    func dict() -> [String: Any] {
-        var d = [String: Any]()
-        d["path"] = path
-        d["pathIndices"] = pathIndices
-        shortcut.flatMap { d["shortcut"] = $0 }        
+    func array() -> [Any] {
+        var d = [Any]()
+        d.append(path)
+        d.append(pathIndices)
+        d.append(fuzzyIndex)
+        shortcut.flatMap { d.append($0) }
         return d
     }
 
@@ -235,13 +214,17 @@ struct MenuItem {
         self.path = path
         self.pathIndices = pathIndices
         self.shortcut = shortcut
+        path.last.flatMap {
+            self.fuzzyIndex = $0.fuzzyIndex.lowercased()
+        }
     }
 
-    init(dict d: [String: Any]) {
-        path = d["path"] as? [String] ?? []
-        pathIndices = d["pathIndices"] as? String ?? ""
-        (d["shortcut"] as? String).flatMap {
-            shortcut = $0
+    init(array a: [Any]) {
+        path = a[0] as? [String] ?? []
+        pathIndices = a[1] as? String ?? ""
+        fuzzyIndex = a[2] as? String ?? ""
+        if a.count == 4 {
+            shortcut = a[3] as? String ?? ""
         }
     }
     
@@ -271,8 +254,6 @@ struct MenuItem {
 // cache 
 struct MenuItemCache {
 
-    // static let path = Alfred.cache(path: "cache.txt")
-
     static func getPaths(_ app: String) -> (String, String) {
         let base = app
             .replacingOccurrences(of: "/", with: "_")
@@ -290,20 +271,19 @@ struct MenuItemCache {
             ),
             let string = String(data: data, encoding: .utf8)
             else { return }
+
         do {
-            try string.write(toFile: path, atomically: true, encoding: .utf8)
+            try string.write(toFile: path, atomically: false, encoding: .utf8)
         } catch { } 
+
     }
 
     static func save(app: String, items: [MenuItem]) {
         // save timestamp info to app.txt
         // save item info to app.items.txt
         let (controlPath, itemsPath) = getPaths(app)
-        let control: [String: Any] = [
-            "app": app,
-            "timestamp" : Date().timeIntervalSince1970
-        ]
-        let items = items.map { $0.dict() }
+        let control: [Any] = [ app, Date().timeIntervalSince1970 ]
+        let items = items.map { $0.array() }
         write(object: control, path: controlPath)
         write(object: items, path: itemsPath)
     }
@@ -318,10 +298,11 @@ struct MenuItemCache {
 
     static func load(app: String, timeout: Double) -> [MenuItem]? {
         let (controlPath, itemsPath) = getPaths(app)
-        guard let control = read(path: controlPath) as? [String: Any],
-            let controlApp = control["app"] as? String,
+        guard let control = read(path: controlPath) as? [Any],
+            control.count == 2,
+            let controlApp = control[0] as? String,
             controlApp == app,
-            let timestamp = control["timestamp"] as? Double
+            let timestamp = control[1] as? Double
             else { 
                 return nil 
             }
@@ -338,16 +319,13 @@ struct MenuItemCache {
                 return nil
             }
         }
-        guard let items = read(path: itemsPath) as? [[String: Any]]
+        guard let items = read(path: itemsPath) as? [[Any]]
             else { return nil }
-        return items.map { MenuItem(dict: $0) }
+        return items.map { MenuItem(array: $0) }
     }
 
     static func extend(app: String, timestamp: Double, controlPath: String) {
-        let control: [String: Any] = [
-            "app": app,
-            "timestamp" : timestamp
-        ]
+        let control: [Any] = [ app, timestamp ]
         write(object: control, path: controlPath)
     }
 
@@ -437,10 +415,10 @@ struct AsyncMenu {
         var menuItems = [MenuItem]()
         let q: DispatchQueue
         if #available(macOS 10.10, *) {
-            q = DispatchQueue(label: "com.folded-paper.menu-bar", qos: .userInteractive, attributes: .concurrent)
+            q = DispatchQueue(label: "folded-paper.menu-bar", qos: .userInteractive, attributes: .concurrent)
         }
         else {
-            q = DispatchQueue(label: "com.folded-paper.menu-bar", attributes: .concurrent)
+            q = DispatchQueue(label: "folded-paper.menu-bar", attributes: .concurrent)
         }
         let group = DispatchGroup()
         guard let menuBarItems = getAttribute(element: menuBar, name: kAXChildrenAttribute) as? [AXUIElement],
@@ -681,12 +659,31 @@ if !query.isEmpty {
             // we enter "nt", we must match "new tab"
             // work our way starting from the leaf menu path
             // and upwards until a ranked match is found
-            for i in menu.path.indices.reversed() {
-                let r = search.rank(item: menu, for: menu.path[i].lowercased())
-                if r.1 > 0 {
-                    return r
-                }
+
+            // for the last item alone, do a fuzzy match 
+            // along with normal ranked search
+            var i = menu.path.count - 1
+            let rank = search.rank(for: menu.path[i].lowercased())
+            if rank == 100 {
+                return (menu, rank)
             }
+            let fuzzyScore = menu.fuzzyIndex.contains(search.term) ? 50 : 0
+            let score = max(fuzzyScore, rank)
+            if score > 0 {
+                return (menu, score)
+            }
+
+            // normally rank the other path components
+            i -= 1
+            while i >= 0 {
+                let r = search.rank(for: menu.path[i].lowercased())
+                if r > 0 {
+                    return (menu, r)
+                }
+                i -= 1
+            }
+
+            // no matches at all
             return (menu, 0)
         }
         .sorted(by: { $0.0.1 > $0.1.1 })
