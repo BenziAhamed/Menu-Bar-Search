@@ -19,3 +19,7 @@ This is a slightly faster implementation of [ctwise's Menu Bar Search](https://w
 - 1.2 - Completely native menu clicking, removed reliance on AppleScript
 - 1.2.1 - Performance improvements when generating menus using direct JSON encoding
 - 1.2.2 - More performance improvements while filtering menu items
+- 1.3 - Added `-async` flag to allow threaded scanning and populating of menus
+- 1.4 - Added `-cache` setting to enable menu result caching and also set a timeout for cache invalidation
+- 1.4.1 - Invalidate cache (if present) after actioning a menu press
+- 1.4.2 - Slide the cache invalidation window forward in case we get invalidated by a near miss
