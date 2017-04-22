@@ -199,13 +199,11 @@ struct MenuItem {
     var path: [String]
     var pathIndices: String
     var shortcut: String? = nil
-    var fuzzyIndex: String = ""
 
     func array() -> [Any] {
         var d = [Any]()
         d.append(path)
         d.append(pathIndices)
-        d.append(fuzzyIndex)
         shortcut.flatMap { d.append($0) }
         return d
     }
@@ -214,17 +212,13 @@ struct MenuItem {
         self.path = path
         self.pathIndices = pathIndices
         self.shortcut = shortcut
-        path.last.flatMap {
-            self.fuzzyIndex = $0.fuzzyIndex.lowercased()
-        }
     }
 
     init(array a: [Any]) {
         path = a[0] as? [String] ?? []
         pathIndices = a[1] as? String ?? ""
-        fuzzyIndex = a[2] as? String ?? ""
-        if a.count == 4 {
-            shortcut = a[3] as? String ?? ""
+        if a.count == 3 {
+            shortcut = a[2] as? String ?? ""
         }
     }
     
@@ -461,6 +455,7 @@ Alfred.preparePaths()
 // -click <json_index_path_to_menu_item> - clicks the menu path for the given pid app
 // -async - enable GCD based collection of sub menu items
 // -cache <timeout> - enable caching with specified timeout interval
+// -no-apple-menu - disable outputing apple menu items
 
 var query = ""
 var pid: Int32 = -1
@@ -472,6 +467,7 @@ var clickIndices: [Int]? = nil
 var loadAsync = false
 var cachingEnabled = false
 var cacheTimeout = 0.0
+var ignoreAppple = false
 
 var i = 1 // skip name of program
 var current: String? {
@@ -546,6 +542,10 @@ while let arg = current {
         case "-async":
             advance()
             loadAsync = true
+
+        case "-no-apple-menu":
+            advance()
+            ignoreAppple = true
 
         default:
             // unknown command line option
@@ -636,6 +636,7 @@ else {
 // func r(_ menu: MenuItem) -> () {
 func render(_ menu: MenuItem) -> () {
     let apple = menu.appleMenuItem
+    if ignoreAppple, apple { return }
     a.add(
         uid: learning ? "\(appName)>\(menu.uid)" : nil, 
         title: (menu.shortcut != nil ? "\(menu.title) - \(menu.shortcut!)" : menu.title), 
@@ -663,11 +664,12 @@ if !query.isEmpty {
             // for the last item alone, do a fuzzy match 
             // along with normal ranked search
             var i = menu.path.count - 1
-            let rank = search.rank(for: menu.path[i].lowercased())
+            let name = menu.path[i].lowercased()
+            let rank = search.rank(for: name)
             if rank == 100 {
                 return (menu, rank)
             }
-            let fuzzyScore = menu.fuzzyIndex.contains(search.term) ? 50 : 0
+            let fuzzyScore = name.fuzzyIndex.contains(search.term) ? 50 : 0
             let score = max(fuzzyScore, rank)
             if score > 0 {
                 return (menu, score)
@@ -701,10 +703,6 @@ if !query.isEmpty {
         r(item.0)
         i += 1
     }
-    if i == 0 {
-        a.add(title: "No menu items")
-    }
-
 }
 else if reorderAppleMenuToLast, menuItems.count > 0 {
     // rearrange so that Apple menu items are last
@@ -715,7 +713,7 @@ else if reorderAppleMenuToLast, menuItems.count > 0 {
     // followed by all items in the starting range
 
     // yes this is more verbose code, but faster
-    // 0..<j will be apple menu items
+    // i..<j will be apple menu items
     // j..<end will be app menu items
 
     let end = menuItems.endIndex
@@ -730,7 +728,8 @@ else if reorderAppleMenuToLast, menuItems.count > 0 {
         if j < end {
             menuItems[j..<end].forEach { r($0) }
         }
-        menuItems[0..<j].forEach { r($0) }
+        // print all apple items
+        menuItems[i..<j].forEach { r($0) } 
     }
     else {
         // no apple menu item at the start?
@@ -741,12 +740,11 @@ else if reorderAppleMenuToLast, menuItems.count > 0 {
 }
 else {
     // no search query, no reorder of menu items
-    if menuItems.isEmpty {
-        a.add(title: "No menu items")
-    }
-    else {
-        menuItems.forEach { r($0) }
-    }
+    menuItems.forEach { r($0) }
+}
+
+if a.results.count == 0 {
+    a.add(title: "No menu items")
 }
 
 print(a.output())
