@@ -24,3 +24,6 @@ This is a slightly faster implementation of [ctwise's Menu Bar Search](https://w
 - 1.4.1 - Invalidate cache (if present) after actioning a menu press
 - 1.4.2 - Slide the cache invalidation window forward in case we get invalidated by a near miss
 - 1.4.3 - Speed improvements to caching, text search and fuzzy matching
+- 1.4.4 - Added `-no-apple-menu` flag that will skip the apple menu items
+- 1.4.5 - Tuned fuzzy matcher, allows non-continuous anchor token search
+- 1.5 - Faster caching using protocol buffers
