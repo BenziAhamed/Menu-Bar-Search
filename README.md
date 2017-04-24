@@ -4,7 +4,7 @@
 
 Search through menu options for front-most application - an Alfred Workflow
 
-> This is a _much_ faster implementation of [ctwise's Menu Bar Search](https://www.alfredforum.com/topic/1993-menu-search/).
+> This is a ~~slightly~~ _much_ faster implementation of [ctwise's Menu Bar Search](https://www.alfredforum.com/topic/1993-menu-search/).
 
 [Download](https://github.com/BenziAhamed/Menu-Bar-Search/raw/master/Menu%20Bar%20Search.alfredworkflow)
 
