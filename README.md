@@ -34,4 +34,4 @@ Search through menu options for front-most application - an Alfred Workflow
 - 1.5 - Faster caching using protocol buffers
   - 1.5.1 - Reduced file creation for cache storage
   - 1.5.2 - Better support for command line apps that create menu bar owning applications
-  - 1.5.2 - Better support for command line apps that create menu bar owning applications
+  - 1.5.3 - Protocol buffer everything - microscopic speed improvements, but hey...
