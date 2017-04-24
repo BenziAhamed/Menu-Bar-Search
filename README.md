@@ -28,3 +28,4 @@ This is a slightly faster implementation of [ctwise's Menu Bar Search](https://w
 - 1.4.5 - Tuned fuzzy matcher, allows non-continuous anchor token search
 - 1.5 - Faster caching using protocol buffers
 - 1.5.1 - Reduced file creation for cache storage
+- 1.5.2 - Better support for command line apps that create menu bar owning applications
