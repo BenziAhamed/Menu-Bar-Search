@@ -8,10 +8,30 @@ Search through menu options for front-most application - an Alfred Workflow
 
 [Download](https://github.com/BenziAhamed/Menu-Bar-Search/raw/master/Menu%20Bar%20Search.alfredworkflow)
 
-## Features
+## Usage
 
-- Fast fuzzy menu name search and selection
-- Integrates with Alfred's learning abilities to display commonly used menu items first
+Type `m` in Alfred to list menu bar items for front most application
+You can filter menu items by name, or do a fuzzy search.
+
+E.g
+
+- `m new tab` will match the menu item **New Tab**
+- `m cw` will match the menu item **Close Window**
+
+
+## Settings
+
+You can change the workflow environment variables to fine tune menu listings
+
+* -show-disabled    true/false    controls if diabled menu items should be shown (default is false)
+
+*  -no-apple-menu    true/false    if true, no menus items under the apple menu will be shown (default is true)
+
+*  -max-children    number    how many sub-menu items to load for each menu item (default is 40)
+
+*  -max-depth    number    how many nested levels if sub menus should be listed (default is 10)
+
+
 
 ## Change log
 
@@ -35,3 +55,5 @@ Search through menu options for front-most application - an Alfred Workflow
   - 1.5.1 - Reduced file creation for cache storage
   - 1.5.2 - Better support for command line apps that create menu bar owning applications
   - 1.5.3 - Protocol buffer everything - microscopic speed improvements, but hey...
+
+  - 1.5.4 - Added various environment variables to fine tune menu listings
