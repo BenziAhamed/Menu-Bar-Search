@@ -57,3 +57,4 @@ You can change the workflow environment variables to fine tune menu listings
   - 1.5.3 - Protocol buffer everything - microscopic speed improvements, but hey...
 
   - 1.5.4 - Added various environment variables to fine tune menu listings
+  - 1.5.5 - Tweaked ranking of search results for better menu listings
