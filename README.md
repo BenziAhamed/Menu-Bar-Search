@@ -27,7 +27,7 @@ You can change the workflow environment variables to fine tune menu listings
 
 *  -no-apple-menu    true/false    if true, no menus items under the apple menu will be shown (default is true)
 
-*  -max-children    number    how many sub-menu items to load for each menu item (default is 40)
+*  -max-children    number    how many sub-menu items to load for each menu item (default is 30)
 
 *  -max-depth    number    how many nested levels if sub menus should be listed (default is 10)
 
