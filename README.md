@@ -55,6 +55,6 @@ You can change the workflow environment variables to fine tune menu listings
   - 1.5.1 - Reduced file creation for cache storage
   - 1.5.2 - Better support for command line apps that create menu bar owning applications
   - 1.5.3 - Protocol buffer everything - microscopic speed improvements, but hey...
-
   - 1.5.4 - Added various environment variables to fine tune menu listings
   - 1.5.5 - Tweaked ranking of search results for better menu listings
+- 1.6 - Added per app customization via Settings.txt configuration file
