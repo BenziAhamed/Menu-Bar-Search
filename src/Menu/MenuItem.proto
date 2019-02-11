@@ -1,0 +1,57 @@
+// protoc --swift_out=. MenuItem.proto
+
+syntax = "proto3";
+
+message MenuItemCache {
+double timeout = 1;
+double created = 2;
+}
+
+message MenuItemList {
+repeated MenuItem items = 1;
+}
+
+message MenuItem {
+string pathIndices = 1;
+string shortcut = 2;
+repeated string path = 3;
+}
+
+
+message AlfredResultList {
+repeated AlfredResultItem items = 1;
+}
+
+message AlfredResultItem {
+string title = 1;
+string subtitle = 2;
+string arg = 3;
+string uid = 4;
+string autoComplete = 5 [json_name = "autocomplete"];
+bool valid = 6;
+AlfredResultItemIcon icon = 7;
+}
+
+message AlfredResultItemIcon {
+string type = 1;
+string path = 2;
+}
+
+
+message Settings {
+repeated AppFilter appFilters = 1;
+}
+
+message AppFilter {
+string app = 1;
+repeated MenuPath ignoreMenuPaths = 2;
+bool showDisabledMenuItems = 3;
+bool showAppleMenu = 4;
+double cacheDuration = 5;
+bool disabled = 6;
+}
+
+message MenuPath {
+repeated string path = 1;
+}
+
