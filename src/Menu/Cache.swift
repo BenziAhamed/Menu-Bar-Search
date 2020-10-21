@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import SwiftProtobuf
 
 // cache
 struct Cache {

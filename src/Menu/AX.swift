@@ -152,10 +152,10 @@ func getMenuItems(
             var modifiers: Int = 0
             var virtualKey: Int = 0
             if let m = getAttribute(element: child, name: kAXMenuItemCmdModifiersAttribute) {
-                CFNumberGetValue(m as! CFNumber, CFNumberType.longType, &modifiers)
+                CFNumberGetValue((m as! CFNumber), CFNumberType.longType, &modifiers)
             }
             if let v = getAttribute(element: child, name: kAXMenuItemCmdVirtualKeyAttribute) {
-                CFNumberGetValue(v as! CFNumber, CFNumberType.longType, &virtualKey)
+                CFNumberGetValue((v as! CFNumber), CFNumberType.longType, &virtualKey)
             }
             
             var menuItem = MenuItem()
@@ -179,7 +179,7 @@ func dumpInfo(element: AXUIElement, name: String, depth: Int) {
     print(padding, ":::", name, ":::")
     print(padding, "   ", element)
     func printAttributeInfo(_ header: String, _ attributes: [String]) {
-        let values = attributes.flatMap { (name:String) -> (String, CFTypeRef)? in
+        let values = attributes.compactMap { (name:String) -> (String, CFTypeRef)? in
             if let a = getAttribute(element: element, name: name) {
                 return (name, a)
             }
@@ -352,7 +352,7 @@ struct MenuGetterOptions {
     init() { }
     
     func canIgnorePath(path: [String]) -> Bool {
-        if appFilter.ignoreMenuPaths.index(where: { $0.path == path }) != nil {
+        if appFilter.ignoreMenuPaths.firstIndex(where: { $0.path == path }) != nil {
             // print("ignoring \(path)")
             return true
         }

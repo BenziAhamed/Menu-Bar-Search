@@ -43,7 +43,7 @@ extension String {
                 if termScalars[index] == c {
                     index = termScalars.index(after: index)
                     if index == end {
-                        return 300 + term.characters.count - penalty
+                        return 300 + term.count - penalty
                     }
                 }
                 else {
@@ -74,7 +74,7 @@ extension String {
         guard let r = range(of: term) else { return 0 }
         if r.lowerBound == self.startIndex { return 500 }
         
-        let dist = self[startIndex..<r.lowerBound].characters.count
+        let dist = self[startIndex..<r.lowerBound].count
         let letters = CharacterSet.letters
         for s in String(self[index(before: r.lowerBound)]).unicodeScalars {
             if letters.contains(s) { return 100 - dist }

@@ -7,7 +7,7 @@
 
 import Foundation
 import Cocoa
-
+import SwiftProtobuf
 
 
 
@@ -135,14 +135,14 @@ while let arg = current {
         
     case "-show-folders":
         let a = Alfred()
-        a.add(.with { $0.title = "Settings Folder"; $0.arg = Alfred.data() })
+        a.add(AlfredResultItem.with { $0.title = "Settings Folder"; $0.arg = Alfred.data() })
         if !FileManager.default.fileExists(atPath: Alfred.data(path: "settings.txt")) {
-            a.add(.with {
+            a.add(AlfredResultItem.with {
                 $0.title = "View a Sample Settings file"
                 $0.arg = "sample settings.txt"
             })
         }
-        a.add(.with { $0.title = "Cache Folder"; $0.arg = Alfred.cache() })
+        a.add(AlfredResultItem.with { $0.title = "Cache Folder"; $0.arg = Alfred.cache() })
         print(a.resultsJson)
         exit(0)
         
@@ -173,7 +173,7 @@ parseEnv("-cache", createDouble) {
 
 var app: NSRunningApplication? = nil
 if pid == -1 {
-    app = NSWorkspace.shared().menuBarOwningApplication
+    app = NSWorkspace.shared.menuBarOwningApplication
 }
 else {
     app = NSRunningApplication(processIdentifier: pid)
@@ -234,7 +234,7 @@ if fm.fileExists(atPath: settingsPath) {
             
             // if we find a specific filter for the current app
             // store that in the options
-            if let i = settings.appFilters.index(where: { $0.app == appID }) {
+            if let i = settings.appFilters.firstIndex(where: { $0.app == appID }) {
                 let appOverride = settings.appFilters[i]
                 
                 if appOverride.disabled {
@@ -355,7 +355,7 @@ if !query.isEmpty {
                 // no matches at all
                 return (menu, 0)
             }
-            .sorted(by: { $0.0.1 > $0.1.1 })
+            .sorted(by: { (a, b) in a.1 > b.1 })
     
     
     // scan through sorted list, add items as long
@@ -384,7 +384,7 @@ else if options.appFilter.showAppleMenu, reorderAppleMenuToLast, menuItems.count
     // j..<end will be app menu items
     
     let end = menuItems.endIndex
-    if let i = menuItems.index(where: { $0.appleMenuItem }) {
+    if let i = menuItems.firstIndex(where: { $0.appleMenuItem }) {
         var j = i + 1
         while j < end, menuItems[j].appleMenuItem {
             j += 1
