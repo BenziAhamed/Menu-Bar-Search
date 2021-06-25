@@ -122,7 +122,6 @@
 				TargetAttributes = {
 					B9D4D41D1EA63F3C0006D19D = {
 						CreatedOnToolsVersion = 8.2.1;
-						DevelopmentTeam = 4QL7N5894Y;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -281,8 +280,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
-				CODE_SIGN_IDENTITY = "-";
-				DEVELOPMENT_TEAM = 4QL7N5894Y;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				DEVELOPMENT_TEAM = SZ79ETR642;
 				INFOPLIST_FILE = "$(SRCROOT)/Menu/info.plist";
 				LIBRARY_SEARCH_PATHS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -296,8 +295,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
-				CODE_SIGN_IDENTITY = "-";
-				DEVELOPMENT_TEAM = 4QL7N5894Y;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				DEVELOPMENT_TEAM = SZ79ETR642;
 				INFOPLIST_FILE = "$(SRCROOT)/Menu/info.plist";
 				LIBRARY_SEARCH_PATHS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";

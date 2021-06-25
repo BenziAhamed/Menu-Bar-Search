@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import ApplicationServices
 
 let virtualKeys = [
     0x24: "↩", // kVK_Return
