@@ -58,3 +58,4 @@ You can change the workflow environment variables to fine tune menu listings
   - 1.5.4 - Added various environment variables to fine tune menu listings
   - 1.5.5 - Tweaked ranking of search results for better menu listings
 - 1.6 - Added per app customization via Settings.txt configuration file
+- 1.7 - Universal build for M1 and Intel
