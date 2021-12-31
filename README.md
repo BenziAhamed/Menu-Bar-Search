@@ -19,7 +19,7 @@ E.g
 - `m cw` will match the menu item **Close Window**
 
 
-### Running on macOS Catalina and beyond
+### ℹ️ 👉 Running on macOS Catalina and beyond
 > If you face issues from Catalina or beyond, in relation to not being able to run the workflow due to security issues (e.g. malicious software checks),
 > have a look at https://github.com/BenziAhamed/Menu-Bar-Search/issues/4 for possible workarounds.
 > 
