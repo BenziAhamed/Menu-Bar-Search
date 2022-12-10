@@ -138,11 +138,15 @@ while let arg = current {
         a.add(AlfredResultItem.with { $0.title = "Settings Folder"; $0.arg = Alfred.data() })
         if !FileManager.default.fileExists(atPath: Alfred.data(path: "settings.txt")) {
             a.add(AlfredResultItem.with {
-                $0.title = "View a Sample Settings file"
+                $0.title = "View a sample Settings file"
+                $0.subtitle = "You can use this as a reference to customise per app configuration"
                 $0.arg = "sample settings.txt"
             })
         }
-        a.add(AlfredResultItem.with { $0.title = "Cache Folder"; $0.arg = Alfred.cache() })
+        a.add(AlfredResultItem.with {
+            $0.title = "Cache Folder";
+            $0.arg = Alfred.cache()
+        })
         print(a.resultsJson)
         exit(0)
         
@@ -181,8 +185,9 @@ else {
 
 guard let app = app else { Alfred.quit("Unable to get app info") }
 let appPath  = app.bundleURL?.path ?? app.executableURL?.path ?? "icon.png"
-let appName = app.localizedName ?? app.bundleIdentifier ?? "no-name"
-let appID = appName
+let appLocalizedName = app.localizedName ?? "no-name"
+let appBundleId = app.bundleIdentifier ?? "no-id"
+let appDisplayName = "\(appLocalizedName) (\(appBundleId))"
 let axApp = AXUIElementCreateApplication(app.processIdentifier)
 
 // try to get a reference to the menu bar
@@ -198,7 +203,7 @@ case .apiDisabled:
     Alfred.quit("Assistive applications are not enabled in System Preferences.", "Is accessibility enabled for Alfred?")
     
 case .noValue:
-    Alfred.quit("No menu bar", "\(appName) does not have a native menu bar")
+    Alfred.quit("No menu bar", "\(appDisplayName) does not have a native menu bar")
     
 default:
     Alfred.quit("Could not get menu bar", "An error occured \(result.rawValue)")
@@ -212,7 +217,7 @@ let menuBar = menuBarValue as! AXUIElement
 // then do that
 if let clickIndices = clickIndices, clickIndices.count > 0 {
     clickMenu(menu: menuBar, pathIndices: clickIndices, currentIndex: 0)
-    Cache.invalidate(app: appID)
+    Cache.invalidate(app: appBundleId)
     exit(0)
 }
 
@@ -234,11 +239,11 @@ if fm.fileExists(atPath: settingsPath) {
             
             // if we find a specific filter for the current app
             // store that in the options
-            if let i = settings.appFilters.firstIndex(where: { $0.app == appID }) {
+            if let i = settings.appFilters.firstIndex(where: { $0.app == appBundleId }) {
                 let appOverride = settings.appFilters[i]
                 
                 if appOverride.disabled {
-                    Alfred.quit("Menu Search disabled for \(appID)")
+                    Alfred.quit("Menu Search disabled for \(appDisplayName)")
                 }
                 
                 options.appFilter = appOverride
@@ -278,7 +283,7 @@ if fm.fileExists(atPath: settingsPath) {
 let menuItems: [MenuItem]
 let a = Alfred()
 
-if cachingEnabled, let items = Cache.load(app: appID, settingsModifiedInterval: settingsModifiedInterval) {
+if cachingEnabled, let items = Cache.load(app: appBundleId, settingsModifiedInterval: settingsModifiedInterval) {
     // caching enabled and we were able to load information
     menuItems = items
 }
@@ -290,7 +295,7 @@ else {
         menuItems = MenuGetter.loadSync(menuBar: menuBar, options: options)
     }
     if cachingEnabled {
-        Cache.save(app: appID, items: menuItems, lifetime: cacheTimeout)
+        Cache.save(app: appBundleId, items: menuItems, lifetime: cacheTimeout)
     }
 }
 
@@ -300,7 +305,7 @@ else {
 func render(_ menu: MenuItem) -> () {
     let apple = menu.appleMenuItem
     a.add(.with {
-        $0.uid = learning ? "\(appName)>\(menu.uid)" : ""
+        $0.uid = learning ? "\(appBundleId)>\(menu.uid)" : ""
         $0.title = menu.shortcut.isEmpty ? menu.title : "\(menu.title) - \(menu.shortcut)"
         $0.subtitle = menu.subtitle
         $0.arg =  menu.arg
