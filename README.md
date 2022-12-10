@@ -6,7 +6,12 @@ Search through menu options for front-most application - an Alfred Workflow
 
 > Based on the implementation of [ctwise's Menu Bar Search](https://www.alfredforum.com/topic/1993-menu-search/).
 
-[Download](https://github.com/BenziAhamed/Menu-Bar-Search/raw/master/Menu%20Bar%20Search.alfredworkflow)
+## Downloads
+
+RECOMMENDED
+[Download v1.8](https://github.com/BenziAhamed/Menu-Bar-Search/raw/v1.8/Menu%20Bar%20Search.alfredworkflow)
+
+[Download latest (may be unstable)](https://github.com/BenziAhamed/Menu-Bar-Search/raw/master/Menu%20Bar%20Search.alfredworkflow)
 
 ## Usage
 
