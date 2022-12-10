@@ -18,27 +18,9 @@ E.g
 - `m new tab` will match the menu item **New Tab**
 - `m cw` will match the menu item **Close Window**
 
+## Releases
 
-### ℹ️ 👉 Running on macOS Catalina and beyond
-> If you face issues from Catalina or beyond, in relation to not being able to run the workflow due to security issues (e.g. malicious software checks),
-> have a look at https://github.com/BenziAhamed/Menu-Bar-Search/issues/4 for possible workarounds.
-> 
-> I am aware of this outstanding issue and will fix it.
-
-
-## Settings
-
-You can change the workflow environment variables to fine tune menu listings
-
-* -show-disabled    true/false    controls if diabled menu items should be shown (default is false)
-
-*  -no-apple-menu    true/false    if true, no menus items under the apple menu will be shown (default is true)
-
-*  -max-children    number    how many sub-menu items to load for each menu item (default is 30)
-
-*  -max-depth    number    how many nested levels if sub menus should be listed (default is 10)
-
-
+Access previous versions from (Github release)[https://github.com/BenziAhamed/Menu-Bar-Search/releases].
 
 ## Change log
 
@@ -67,3 +49,4 @@ You can change the workflow environment variables to fine tune menu listings
 - 1.6 - Added per app customization via Settings.txt configuration file
 - 1.7 - Universal build for M1 and Intel
 - 1.8 - Fixed the universal build
+- 1.9 - changed to user configuration, and signed executable (exported using Alfred 5)
