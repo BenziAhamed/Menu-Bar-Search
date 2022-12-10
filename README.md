@@ -6,7 +6,18 @@ Search through menu options for front-most application - an Alfred Workflow
 
 > Based on the implementation of [ctwise's Menu Bar Search](https://www.alfredforum.com/topic/1993-menu-search/).
 
-[Download](https://github.com/BenziAhamed/Menu-Bar-Search/raw/master/Menu%20Bar%20Search.alfredworkflow)
+## Downloads
+
+RECOMMENDED
+[Download v1.8](https://github.com/BenziAhamed/Menu-Bar-Search/raw/v1.8/Menu%20Bar%20Search.alfredworkflow)
+
+### Running on macOS Catalina and beyond
+> If you face issues from Catalina or beyond, in relation to not being able to run the workflow due to security issues (e.g. malicious software checks),
+> have a look at https://github.com/BenziAhamed/Menu-Bar-Search/issues/4 for possible workarounds.
+> 
+> I am aware of this outstanding issue and will fix it.
+
+[Download latest (may be unstable)](https://github.com/BenziAhamed/Menu-Bar-Search/raw/master/Menu%20Bar%20Search.alfredworkflow)
 
 ## Usage
 
