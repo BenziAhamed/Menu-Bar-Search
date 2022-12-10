@@ -53,6 +53,12 @@ let createInt: (String)->Int? = { Int($0) }
 let createInt32: (String)->Int32? = { Int32($0) }
 let createBool: (String)->Bool? = { Bool($0) }
 let createDouble: (String)->Double? = { Double($0) }
+let createBoolFromInt: (String)->Bool? = { (value) in
+    if let v = Int(value), v == 1 {
+        return true
+    }
+    return false
+}
 
 func parse<T>(_ create: (String)->T?, _ error: String)->T {
     if let arg = current, let value = create(arg) {
@@ -60,6 +66,14 @@ func parse<T>(_ create: (String)->T?, _ error: String)->T {
         return value
     }
     Alfred.quit(error)
+}
+
+func parseOptional<T>(_ create: (String)->T?, _ fallback: T)->T {
+    if let arg = current {
+        advance()
+        return create(arg) ?? fallback
+    }
+    return fallback
 }
 
 while let arg = current {
@@ -77,11 +91,11 @@ while let arg = current {
 
     case "-max-depth":
         advance()
-        options.maxDepth = parse(createInt, "Expected count after -max-depth")
+        options.maxDepth = parse(createInt, "Expected number after -max-depth")
 
     case "-max-children":
         advance()
-        options.maxChildren = parse(createInt, "Expected count after -max-children")
+        options.maxChildren = parse(createInt, "Expected number after -max-children")
 
     case "-cache":
         advance()
@@ -111,7 +125,7 @@ while let arg = current {
 
     case "-show-apple-menu":
         advance()
-        options.appFilter.showAppleMenu = true
+        options.appFilter.showAppleMenu = parse(createBoolFromInt, "Expected 0/1 after -show-apple-menu")
 
     case "-only":
         advance()
@@ -123,7 +137,7 @@ while let arg = current {
 
     case "-show-disabled":
         advance()
-        options.appFilter.showDisabledMenuItems = parse(createBool, "Expected true/false after -show-disabled")
+        options.appFilter.showDisabledMenuItems = parse(createBoolFromInt, "Expected 0/1 after -show-disabled")
 
     case "-dump":
         advance()
@@ -168,22 +182,6 @@ while let arg = current {
         // unknown command line option
         advance()
     }
-}
-
-var env = ProcessInfo().environment
-func parseEnv<T>(_ name: String, _ parseFunction: (String)->T?, _ done: (T)->()) {
-    guard let value = env[name], !value.isEmpty else { return }
-    guard let v = parseFunction(value) else { Alfred.quit("Invalid value for \(name)", "[x] Environment Variables") }
-    done(v)
-}
-
-parseEnv("-show-disabled", createBool) { options.appFilter.showDisabledMenuItems = $0 }
-parseEnv("-max-children", createInt) { options.maxChildren = $0 }
-parseEnv("-max-depth", createInt) { options.maxDepth = $0 }
-parseEnv("-show-apple-menu", createBool) { options.appFilter.showAppleMenu = $0 }
-parseEnv("-cache", createDouble) {
-    cachingEnabled = true
-    cacheTimeout = $0
 }
 
 // get application details
