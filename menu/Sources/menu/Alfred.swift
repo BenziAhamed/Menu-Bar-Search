@@ -9,7 +9,6 @@
 import Foundation
 
 class Alfred {
-    
     static func preparePaths() {
         let fm = FileManager.default
         try? fm.createDirectory(atPath: data(), withIntermediateDirectories: false, attributes: nil)
@@ -50,5 +49,4 @@ class Alfred {
         print(a.resultsJson)
         exit(0)
     }
-    
 }

@@ -9,7 +9,6 @@
 import Foundation
 
 extension String {
-    
     // fuzzy match a term against a string
     // matches alphanumerics against input term unicode scalars
     // e.g. Arabic (Windows 1)
@@ -20,8 +19,7 @@ extension String {
     // 1ws > 1w > 1 > ws > w > s
     // complexity: O(n) where n = characters in self
     func fuzzyMatch(term: String) -> Int {
-        
-        if term.isEmpty || isEmpty { return  0 }
+        if term.isEmpty || isEmpty { return 0 }
         
         let alphaNum = CharacterSet.alphanumerics
         let whitespace = CharacterSet.whitespaces
@@ -56,31 +54,26 @@ extension String {
             }
         }
         
-        
         return 0
     }
 }
 
 extension String {
-    
     // if word starts with term 500
     // if term is inside self
     // if at a word boundary 150 - distance
     // else 100 - distance
     func textMatch(term: String) -> Int {
-        
-        if term.isEmpty || isEmpty { return  0 }
+        if term.isEmpty || isEmpty { return 0 }
         
         guard let r = range(of: term) else { return 0 }
         if r.lowerBound == self.startIndex { return 500 }
         
-        let dist = self[startIndex..<r.lowerBound].count
+        let dist = self[startIndex ..< r.lowerBound].count
         let letters = CharacterSet.letters
         for s in String(self[index(before: r.lowerBound)]).unicodeScalars {
             if letters.contains(s) { return 100 - dist }
         }
         return 250 - dist
     }
-    
 }
-

@@ -5,13 +5,9 @@
 // ux for searching and actioning menu bar items of the app specified
 // in Alfred using Swift
 
-import Foundation
 import Cocoa
+import Foundation
 import SwiftProtobuf
-
-
-
-
 
 Alfred.preparePaths()
 
@@ -34,7 +30,7 @@ var query = ""
 var pid: Int32 = -1
 var reorderAppleMenuToLast = true
 var learning = true
-var clickIndices: [Int]? = nil
+var clickIndices: [Int]?
 var loadAsync = false
 var cachingEnabled = false
 var cacheTimeout = 0.0
@@ -48,16 +44,17 @@ var i = 1 // skip name of program
 var current: String? {
     return i < CommandLine.arguments.count ? CommandLine.arguments[i] : nil
 }
+
 func advance() {
     i += 1
 }
 
-let createInt:(String)->Int? = { Int($0) }
-let createInt32:(String)->Int32? = { Int32($0) }
-let createBool:(String)->Bool? = { Bool($0) }
-let createDouble:(String)->Double? = { Double($0) }
+let createInt: (String)->Int? = { Int($0) }
+let createInt32: (String)->Int32? = { Int32($0) }
+let createBool: (String)->Bool? = { Bool($0) }
+let createDouble: (String)->Double? = { Double($0) }
 
-func parse<T>(_ create: (String)->T?, _ error: String) -> T {
+func parse<T>(_ create: (String)->T?, _ error: String)->T {
     if let arg = current, let value = create(arg) {
         advance()
         return value
@@ -67,56 +64,55 @@ func parse<T>(_ create: (String)->T?, _ error: String) -> T {
 
 while let arg = current {
     switch arg {
-        
     case "-pid":
         advance()
         pid = parse(createInt32, "Expected integer after -pid")
-        
+
     case "-query", "-q":
         advance()
         if let arg = current {
             advance()
             query = arg.lowercased()
         }
-        
+
     case "-max-depth":
         advance()
         options.maxDepth = parse(createInt, "Expected count after -max-depth")
-        
+
     case "-max-children":
         advance()
         options.maxChildren = parse(createInt, "Expected count after -max-children")
-        
+
     case "-cache":
         advance()
         cachingEnabled = true
         cacheTimeout = parse(createDouble, "Expected timeout after -cache")
-        
+
     case "-reorder-apple-menu":
         advance()
         reorderAppleMenuToLast = parse(createBool, "Expected true/false after -reorder-apple-menu")
-        
+
     case "-learning":
         advance()
         learning = parse(createBool, "Expected true/false after -learning")
-        
+
     case "-click":
         advance()
         guard let pathJson = current else {
-                Alfred.quit("Not able to parse argument after -click \(CommandLine.arguments)")
-                break
+            Alfred.quit("Not able to parse argument after -click \(CommandLine.arguments)")
+            break
         }
         advance()
         clickIndices = IndexParser.parse(pathJson)
-        
+
     case "-async":
         advance()
         loadAsync = true
-        
+
     case "-show-apple-menu":
         advance()
         options.appFilter.showAppleMenu = true
-        
+
     case "-only":
         advance()
         guard let specificMenuRoot = current else {
@@ -124,15 +120,15 @@ while let arg = current {
             break
         }
         options.specificMenuRoot = specificMenuRoot
-        
+
     case "-show-disabled":
         advance()
         options.appFilter.showDisabledMenuItems = parse(createBool, "Expected true/false after -show-disabled")
-        
+
     case "-dump":
         advance()
         options.dumpInfo = true
-        
+
     case "-show-folders":
         let a = Alfred()
         a.add(AlfredResultItem.with { $0.title = "Settings Folder"; $0.arg = Alfred.data() })
@@ -144,18 +140,35 @@ while let arg = current {
             })
         }
         a.add(AlfredResultItem.with {
-            $0.title = "Cache Folder";
+            $0.title = "Cache Folder"
             $0.arg = Alfred.cache()
         })
+//        for cache in Cache.getCachedMenuControls() {
+//            let expiry = Date(timeIntervalSince1970: cache.control.timeout)
+//            let now = Date()
+//            let expirationPrefix = expiry > now ? "expires" : "expired"
+//            if #available(macOS 10.15, *) {
+//                let formatter = RelativeDateTimeFormatter()
+//                a.add(AlfredResultItem.with {
+//                    $0.title = cache.appBundleId
+//                    $0.subtitle = "\(expirationPrefix): \(formatter.localizedString(for: expiry, relativeTo: Date()))"
+//                })
+//            }
+//            else {
+//                a.add(AlfredResultItem.with {
+//                    $0.title = cache.appBundleId
+//                    $0.subtitle = "\(expirationPrefix): \(expiry)"
+//                })
+//            }
+//        }
         print(a.resultsJson)
         exit(0)
-        
+
     default:
         // unknown command line option
         advance()
     }
 }
-
 
 var env = ProcessInfo().environment
 func parseEnv<T>(_ name: String, _ parseFunction: (String)->T?, _ done: (T)->()) {
@@ -175,7 +188,7 @@ parseEnv("-cache", createDouble) {
 
 // get application details
 
-var app: NSRunningApplication? = nil
+var app: NSRunningApplication?
 if pid == -1 {
     app = NSWorkspace.shared.menuBarOwningApplication
 }
@@ -184,7 +197,7 @@ else {
 }
 
 guard let app = app else { Alfred.quit("Unable to get app info") }
-let appPath  = app.bundleURL?.path ?? app.executableURL?.path ?? "icon.png"
+let appPath = app.bundleURL?.path ?? app.executableURL?.path ?? "icon.png"
 let appLocalizedName = app.localizedName ?? "no-name"
 let appBundleId = app.bundleIdentifier ?? "no-id"
 let appDisplayName = "\(appLocalizedName) (\(appBundleId))"
@@ -192,19 +205,18 @@ let axApp = AXUIElementCreateApplication(app.processIdentifier)
 
 // try to get a reference to the menu bar
 
-var menuBarValue: CFTypeRef? = nil
+var menuBarValue: CFTypeRef?
 let result = AXUIElementCopyAttributeValue(axApp, kAXMenuBarAttribute as CFString, &menuBarValue)
 switch result {
-    
 case .success:
     break
-    
+
 case .apiDisabled:
     Alfred.quit("Assistive applications are not enabled in System Preferences.", "Is accessibility enabled for Alfred?")
-    
+
 case .noValue:
     Alfred.quit("No menu bar", "\(appDisplayName) does not have a native menu bar")
-    
+
 default:
     Alfred.quit("Could not get menu bar", "An error occured \(result.rawValue)")
 }
@@ -221,14 +233,14 @@ if let clickIndices = clickIndices, clickIndices.count > 0 {
     exit(0)
 }
 
-var settingsModifiedInterval: Double? = nil
+var settingsModifiedInterval: Double?
 let fm = FileManager.default
 let settingsPath = Alfred.data(path: "settings.txt")
 if fm.fileExists(atPath: settingsPath) {
     if let attributes = try? fm.attributesOfItem(atPath: settingsPath),
-        let mod = attributes[.modificationDate] as? Date,
-        // let settingsData = try? Data.init(contentsOf: .init(fileURLWithPath: settingsPath))
-        let settingsText = try? String(contentsOfFile: settingsPath)
+       let mod = attributes[.modificationDate] as? Date,
+       // let settingsData = try? Data.init(contentsOf: .init(fileURLWithPath: settingsPath))
+       let settingsText = try? String(contentsOfFile: settingsPath)
     {
         do {
             let settings = try Settings(textFormatString: settingsText)
@@ -236,16 +248,16 @@ if fm.fileExists(atPath: settingsPath) {
             // record timestamp of when we last modified it
             // all caches created before this timestamp are stale
             settingsModifiedInterval = mod.timeIntervalSince1970
-            
+
             // if we find a specific filter for the current app
             // store that in the options
             if let i = settings.appFilters.firstIndex(where: { $0.app == appBundleId }) {
                 let appOverride = settings.appFilters[i]
-                
+
                 if appOverride.disabled {
                     Alfred.quit("Menu Search disabled for \(appDisplayName)")
                 }
-                
+
                 options.appFilter = appOverride
                 if options.appFilter.cacheDuration > 0 {
                     cacheTimeout = options.appFilter.cacheDuration
@@ -255,7 +267,8 @@ if fm.fileExists(atPath: settingsPath) {
                     cachingEnabled = false
                 }
             }
-        } catch let error as TextFormatDecodingError {
+        }
+        catch let error as TextFormatDecodingError {
             Alfred.quit("\(error)", "Settings Error")
         }
         catch {
@@ -267,18 +280,16 @@ if fm.fileExists(atPath: settingsPath) {
     }
 }
 
-
-
 // print("options.appFilter.showAppleMenu", options.appFilter.showAppleMenu)
 
-//do {
+// do {
 //    var s = Settings()
 //    var f = AppFilter()
 //    f.app = "Terminal"
 //    f.ignorePaths.append(MenuPath.with { $0.path = ["Shell"] } )
 //    s.appFilters = [f]
 //    print(try! s.jsonString())
-//}
+// }
 
 let menuItems: [MenuItem]
 let a = Alfred()
@@ -302,33 +313,33 @@ else {
 // filter menu items and render result
 
 // func r(_ menu: MenuItem) -> () {
-func render(_ menu: MenuItem) -> () {
+func render(_ menu: MenuItem) {
     let apple = menu.appleMenuItem
     a.add(.with {
         $0.uid = learning ? "\(appBundleId)>\(menu.uid)" : ""
         $0.title = menu.shortcut.isEmpty ? menu.title : "\(menu.title) - \(menu.shortcut)"
         $0.subtitle = menu.subtitle
-        $0.arg =  menu.arg
+        $0.arg = menu.arg
         $0.icon.path = apple ? "apple-icon.png" : appPath
         $0.icon.type = apple ? "" : "fileicon"
     })
 }
+
 let r = render // prevent swiftc compiler segfault
 
 if !query.isEmpty {
-    
     let term = query.lowercased()
     let rankedMenuItems: [(MenuItem, Int)] =
         menuItems
             .lazy
-            .map { (menu: MenuItem) -> (MenuItem, Int) in
+            .map { (menu: MenuItem)->(MenuItem, Int) in
                 // finds the first ranked path component
                 // if we have File -> New Tab
                 // and we enter "file", we must match "file"
                 // we enter "nt", we must match "new tab"
                 // work our way starting from the leaf menu path
                 // and upwards until a ranked match is found
-                
+
                 // for the last item alone, do a fuzzy match
                 // along with normal ranked search
                 var level = menu.path.count - 1
@@ -345,7 +356,7 @@ if !query.isEmpty {
                 if score > 0 {
                     return (menu, score + rankAdjust)
                 }
-                
+
                 // normally rank the other path components
                 level -= 1
                 while level >= 0 {
@@ -356,13 +367,12 @@ if !query.isEmpty {
                     }
                     level -= 1
                 }
-                
+
                 // no matches at all
                 return (menu, 0)
             }
-            .sorted(by: { (a, b) in a.1 > b.1 })
-    
-    
+            .sorted(by: { a, b in a.1 > b.1 })
+
     // scan through sorted list, add items as long
     // as we have rank > 0, break off the moment
     // we reach an item with rank 0
@@ -383,11 +393,11 @@ else if options.appFilter.showAppleMenu, reorderAppleMenuToLast, menuItems.count
     // the index of menu items which is not a apple menu
     // then display all items from that range
     // followed by all items in the starting range
-    
+
     // yes this is more verbose code, but faster
     // i..<j will be apple menu items
     // j..<end will be app menu items
-    
+
     let end = menuItems.endIndex
     if let i = menuItems.firstIndex(where: { $0.appleMenuItem }) {
         var j = i + 1

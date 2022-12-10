@@ -6,20 +6,20 @@
 //  Copyright © 2017 Benzi Ahamed. All rights reserved.
 //
 
-import Foundation
 import ApplicationServices
+import Foundation
 
 let virtualKeys = [
     0x24: "↩", // kVK_Return
-    0x4C: "⌤", // kVK_ANSI_KeypadEnter
+    0x4c: "⌤", // kVK_ANSI_KeypadEnter
     0x47: "⌧", // kVK_ANSI_KeypadClear
     0x30: "⇥", // kVK_Tab
     0x31: "␣", // kVK_Space
     0x33: "⌫", // kVK_Delete
     0x35: "⎋", // kVK_Escape
     0x39: "⇪", // kVK_CapsLock
-    0x3F: "fn", // kVK_Function
-    0x7A: "F1", // kVK_F1
+    0x3f: "fn", // kVK_Function
+    0x7a: "F1", // kVK_F1
     0x78: "F2", // kVK_F2
     0x63: "F3", // kVK_F3
     0x76: "F4", // kVK_F4
@@ -28,26 +28,26 @@ let virtualKeys = [
     0x62: "F7", // kVK_F7
     0x64: "F8", // kVK_F8
     0x65: "F9", // kVK_F9
-    0x6D: "F10", // kVK_F10
+    0x6d: "F10", // kVK_F10
     0x67: "F11", // kVK_F11
-    0x6F: "F12", // kVK_F12
+    0x6f: "F12", // kVK_F12
     0x69: "F13", // kVK_F13
-    0x6B: "F14", // kVK_F14
+    0x6b: "F14", // kVK_F14
     0x71: "F15", // kVK_F15
-    0x6A: "F16", // kVK_F16
+    0x6a: "F16", // kVK_F16
     0x40: "F17", // kVK_F17
-    0x4F: "F18", // kVK_F18
+    0x4f: "F18", // kVK_F18
     0x50: "F19", // kVK_F19
-    0x5A: "F20", // kVK_F20
+    0x5a: "F20", // kVK_F20
     0x73: "↖", // kVK_Home
     0x74: "⇞", // kVK_PageUp
     0x75: "⌦", // kVK_ForwardDelete
     0x77: "↘", // kVK_End
     0x79: "⇟", // kVK_PageDown
-    0x7B: "←", // kVK_LeftArrow
-    0x7C: "→", // kVK_RightArrow
-    0x7D: "↓", // kVK_DownArrow
-    0x7E: "↑", // kVK_UpArrow
+    0x7b: "←", // kVK_LeftArrow
+    0x7c: "→", // kVK_RightArrow
+    0x7d: "↓", // kVK_DownArrow
+    0x7e: "↑", // kVK_UpArrow
 ]
 
 func decode(modifiers: Int) -> String {
@@ -80,11 +80,10 @@ func getShortcut(_ cmd: String?, _ modifiers: Int, _ virtualKey: Int) -> String 
 }
 
 func getAttribute(element: AXUIElement, name: String) -> CFTypeRef? {
-    var value: CFTypeRef? = nil
+    var value: CFTypeRef?
     AXUIElementCopyAttributeValue(element, name as CFString, &value)
     return value
 }
-
 
 func clickMenu(menu element: AXUIElement, pathIndices: [Int], currentIndex: Int) {
     guard let menuBarItems = getAttribute(element: element, name: kAXChildrenAttribute) as? [AXUIElement], menuBarItems.count > 0 else { return }
@@ -99,8 +98,6 @@ func clickMenu(menu element: AXUIElement, pathIndices: [Int], currentIndex: Int)
     clickMenu(menu: menuBar[0], pathIndices: pathIndices, currentIndex: currentIndex + 1)
 }
 
-
-
 func getMenuItems(
     forElement element: AXUIElement,
     menuItems: inout [MenuItem],
@@ -108,14 +105,11 @@ func getMenuItems(
     pathIndices: String = "",
     depth: Int = 0,
     options: MenuGetterOptions
-    ) {
-    
-    
+) {
     guard depth < options.maxDepth else { return }
     guard let children = getAttribute(element: element, name: kAXChildrenAttribute) as? [AXUIElement], children.count > 0 else { return }
     var processedChildrenCount = 0
     for i in children.indices {
-        
         let child = children[i]
         
         guard let enabled = getAttribute(element: child, name: kAXEnabledAttribute) as? Bool else { continue }
@@ -123,7 +117,6 @@ func getMenuItems(
         guard let name = getAttribute(element: child, name: kAXTitleAttribute) as? String else { continue }
         guard !name.isEmpty else { continue }
         guard let children = getAttribute(element: child, name: kAXChildrenAttribute) as? [AXUIElement] else { continue }
-        
         
         if options.dumpInfo {
             dumpInfo(element: child, name: name, depth: depth)
@@ -133,7 +126,6 @@ func getMenuItems(
         if options.canIgnorePath(path: menuPath) { continue }
         
         if children.count == 1, enabled {
-            
             // sub-menu item, scan children
             getMenuItems(
                 forElement: children[0],
@@ -145,18 +137,17 @@ func getMenuItems(
             )
         }
         else {
-            
-            if !options.appFilter.showDisabledMenuItems && !enabled { continue }
+            if !options.appFilter.showDisabledMenuItems, !enabled { continue }
             
             // not a sub menu, if we have a path to this item
             let cmd = getAttribute(element: child, name: kAXMenuItemCmdCharAttribute) as? String
-            var modifiers: Int = 0
-            var virtualKey: Int = 0
+            var modifiers = 0
+            var virtualKey = 0
             if let m = getAttribute(element: child, name: kAXMenuItemCmdModifiersAttribute) {
-                CFNumberGetValue((m as! CFNumber), CFNumberType.longType, &modifiers)
+                CFNumberGetValue(m as! CFNumber, CFNumberType.longType, &modifiers)
             }
             if let v = getAttribute(element: child, name: kAXMenuItemCmdVirtualKeyAttribute) {
-                CFNumberGetValue((v as! CFNumber), CFNumberType.longType, &virtualKey)
+                CFNumberGetValue(v as! CFNumber, CFNumberType.longType, &virtualKey)
             }
             
             var menuItem = MenuItem()
@@ -173,14 +164,12 @@ func getMenuItems(
     }
 }
 
-
 func dumpInfo(element: AXUIElement, name: String, depth: Int) {
-    
-    let padding = " " + String.init(repeating: " |", count: depth - 1)
+    let padding = " " + String(repeating: " |", count: depth - 1)
     print(padding, ":::", name, ":::")
     print(padding, "   ", element)
     func printAttributeInfo(_ header: String, _ attributes: [String]) {
-        let values = attributes.compactMap { (name:String) -> (String, CFTypeRef)? in
+        let values = attributes.compactMap { (name: String) -> (String, CFTypeRef)? in
             if let a = getAttribute(element: element, name: name) {
                 return (name, a)
             }
@@ -191,7 +180,6 @@ func dumpInfo(element: AXUIElement, name: String, depth: Int) {
         values.forEach { print(padding, "        ", $0.0, $0.1) }
     }
     
-    
     printAttributeInfo("- informational attributes", [
         kAXRoleAttribute,
         kAXSubroleAttribute,
@@ -199,7 +187,7 @@ func dumpInfo(element: AXUIElement, name: String, depth: Int) {
         kAXTitleAttribute,
         kAXDescriptionAttribute,
         kAXHelpAttribute,
-        ])
+    ])
     
 //    printAttributeInfo("- hierarchy or relationship attributes", [
 //        kAXParentAttribute,
@@ -219,7 +207,7 @@ func dumpInfo(element: AXUIElement, name: String, depth: Int) {
         kAXFocusedAttribute,
         kAXPositionAttribute,
         kAXSizeAttribute,
-        ])
+    ])
     
     printAttributeInfo("- value attributes", [
         kAXValueAttribute,
@@ -229,7 +217,7 @@ func dumpInfo(element: AXUIElement, name: String, depth: Int) {
         kAXValueIncrementAttribute,
         kAXValueWrapsAttribute,
         kAXAllowedValuesAttribute,
-        ])
+    ])
     
     printAttributeInfo("- text-specific attributes", [
         kAXSelectedTextAttribute,
@@ -239,7 +227,7 @@ func dumpInfo(element: AXUIElement, name: String, depth: Int) {
         kAXNumberOfCharactersAttribute,
         kAXSharedTextUIElementsAttribute,
         kAXSharedCharacterRangeAttribute,
-        ])
+    ])
     
     printAttributeInfo("- window, sheet, or drawer-specific attributes", [
         kAXMainAttribute,
@@ -253,7 +241,7 @@ func dumpInfo(element: AXUIElement, name: String, depth: Int) {
         kAXModalAttribute,
         kAXDefaultButtonAttribute,
         kAXCancelButtonAttribute,
-        ])
+    ])
     
     printAttributeInfo("- menu or menu item-specific attributes", [
         kAXMenuItemCmdCharAttribute,
@@ -262,7 +250,7 @@ func dumpInfo(element: AXUIElement, name: String, depth: Int) {
         kAXMenuItemCmdModifiersAttribute,
         kAXMenuItemMarkCharAttribute,
         kAXMenuItemPrimaryUIElementAttribute,
-        ])
+    ])
     
     printAttributeInfo("- application element-specific attributes", [
         kAXMenuBarAttribute,
@@ -273,7 +261,7 @@ func dumpInfo(element: AXUIElement, name: String, depth: Int) {
         kAXFocusedWindowAttribute,
         kAXFocusedUIElementAttribute,
         kAXExtrasMenuBarAttribute,
-        ])
+    ])
     
     printAttributeInfo("- date/time-specific attributes", [
         kAXHourFieldAttribute,
@@ -283,7 +271,7 @@ func dumpInfo(element: AXUIElement, name: String, depth: Int) {
         kAXDayFieldAttribute,
         kAXMonthFieldAttribute,
         kAXYearFieldAttribute,
-        ])
+    ])
     
     printAttributeInfo("- table, outline, or browser-specific attributes", [
         kAXRowsAttribute,
@@ -298,12 +286,12 @@ func dumpInfo(element: AXUIElement, name: String, depth: Int) {
         kAXDisclosingAttribute,
         kAXDisclosedRowsAttribute,
         kAXDisclosedByRowAttribute,
-        ])
+    ])
     
     printAttributeInfo("- matte-specific attributes", [
         kAXMatteHoleAttribute,
         kAXMatteContentUIElementAttribute,
-        ])
+    ])
     
     printAttributeInfo("- ruler-specific attributes", [
         kAXMarkerUIElementsAttribute,
@@ -311,7 +299,7 @@ func dumpInfo(element: AXUIElement, name: String, depth: Int) {
         kAXUnitDescriptionAttribute,
         kAXMarkerTypeAttribute,
         kAXMarkerTypeDescriptionAttribute,
-        ])
+    ])
     
     printAttributeInfo("- miscellaneous or role-specific attributes", [
         kAXHorizontalScrollBarAttribute,
@@ -341,16 +329,16 @@ func dumpInfo(element: AXUIElement, name: String, depth: Int) {
         kAXFocusedApplicationAttribute,
         kAXElementBusyAttribute,
         kAXAlternateUIVisibleAttribute,
-        ])
+    ])
 }
 
 struct MenuGetterOptions {
     var maxDepth = 10
     var maxChildren = 20
-    var specificMenuRoot:String? = nil
+    var specificMenuRoot: String?
     var dumpInfo = false
     var appFilter = AppFilter()
-    init() { }
+    init() {}
     
     func canIgnorePath(path: [String]) -> Bool {
         if appFilter.ignoreMenuPaths.firstIndex(where: { $0.path == path }) != nil {
@@ -362,12 +350,11 @@ struct MenuGetterOptions {
     }
 }
 
-struct MenuGetter {
-    
+enum MenuGetter {
     static func loadSync(menuBar: AXUIElement, options: MenuGetterOptions) -> [MenuItem] {
         var menuItems = [MenuItem]()
         guard let menuBarItems = getAttribute(element: menuBar, name: kAXChildrenAttribute) as? [AXUIElement],
-            menuBarItems.count > 0 else { return [] }
+              menuBarItems.count > 0 else { return [] }
         for i in menuBarItems.indices {
             let item = menuBarItems[i]
             guard let name = getAttribute(element: item, name: kAXTitleAttribute) as? String else { continue }
@@ -400,7 +387,7 @@ struct MenuGetter {
         }
         let group = DispatchGroup()
         guard let menuBarItems = getAttribute(element: menuBar, name: kAXChildrenAttribute) as? [AXUIElement],
-            menuBarItems.count > 0 else { return [] }
+              menuBarItems.count > 0 else { return [] }
         
         for i in menuBarItems.indices {
             let item = menuBarItems[i]
@@ -432,14 +419,7 @@ struct MenuGetter {
     }
 }
 
-
-
-
-
-
-
-
-//func buildMenuNodes(forElement element: AXUIElement, depth: Int = 0, maxDepth: Int = 10, maxChildren: Int = 20) -> [MenuNode] {
+// func buildMenuNodes(forElement element: AXUIElement, depth: Int = 0, maxDepth: Int = 10, maxChildren: Int = 20) -> [MenuNode] {
 //    guard let children = getAttribute(element: element, name: kAXChildrenAttribute) as? [AXUIElement], children.count > 0 else { return [] }
 //    var processed = 0
 //    var nodes = [MenuNode]()
@@ -477,9 +457,9 @@ struct MenuGetter {
 //        if processed > maxChildren { break }
 //    }
 //    return nodes
-//}
+// }
 
-//func buildMenuItems(nodes: [MenuNode]) -> [MenuItem] {
+// func buildMenuItems(nodes: [MenuNode]) -> [MenuItem] {
 //    var items = [MenuItem]()
 //    var path = [String]()
 //    var indexPath = [Int]()
@@ -514,5 +494,5 @@ struct MenuGetter {
 //        i += 1
 //    }
 //    return items
-//}
+// }
 //

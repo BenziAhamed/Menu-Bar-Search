@@ -8,9 +8,7 @@
 
 import Foundation
 
-
-public struct IndexParser {
-    
+public enum IndexParser {
     // parse integers out of a given text string
     public static func parse(_ text: String) -> [Int] {
         var i = text.unicodeScalars.startIndex
@@ -21,7 +19,7 @@ public struct IndexParser {
         while i < end {
             let c = text.unicodeScalars[i].value
             if c >= 48, c <= 57 {
-                n = n * 10 + Int(c-48) // "0" is 48
+                n = n * 10 + Int(c - 48) // "0" is 48
                 pending = true
             }
             else if pending {
