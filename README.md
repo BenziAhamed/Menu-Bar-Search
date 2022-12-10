@@ -20,7 +20,7 @@ E.g
 
 ## Releases
 
-Access previous versions from (Github release)[https://github.com/BenziAhamed/Menu-Bar-Search/releases].
+Download previous versions from [Github releases](https://github.com/BenziAhamed/Menu-Bar-Search/releases).
 
 ## Change log
 
