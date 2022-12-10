@@ -169,6 +169,18 @@ struct MenuPath {
   init() {}
 }
 
+#if swift(>=5.5) && canImport(_Concurrency)
+extension MenuItemCache: @unchecked Sendable {}
+extension MenuItemList: @unchecked Sendable {}
+extension MenuItem: @unchecked Sendable {}
+extension AlfredResultList: @unchecked Sendable {}
+extension AlfredResultItem: @unchecked Sendable {}
+extension AlfredResultItemIcon: @unchecked Sendable {}
+extension Settings: @unchecked Sendable {}
+extension AppFilter: @unchecked Sendable {}
+extension MenuPath: @unchecked Sendable {}
+#endif  // swift(>=5.5) && canImport(_Concurrency)
+
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 extension MenuItemCache: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
@@ -348,6 +360,10 @@ extension AlfredResultItem: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if !self.title.isEmpty {
       try visitor.visitSingularStringField(value: self.title, fieldNumber: 1)
     }
@@ -366,9 +382,9 @@ extension AlfredResultItem: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
     if self.valid != false {
       try visitor.visitSingularBoolField(value: self.valid, fieldNumber: 6)
     }
-    if let v = self._icon {
+    try { if let v = self._icon {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
-    }
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
