@@ -1,0 +1,95 @@
+
+# - NOTE --------------------------------------------
+#
+# THIS IS A SAMPLE SETTINGS FILE THAT EXPLAINS THE FORMAT
+# AND IS INCLUDED IN THE WORKFLOW FOLDER
+#
+# YOU MUST CREATE A settings.txt FILE IN YOUR SETTINGS FOLDER
+# YOUR SETTINGS FOLDER CAN BE ACCESSED BY TYPING ms INTO ALFRED
+#
+# MODIFYING THIS FILE DIRECTLY WILL HAVE NO EFFECT TO THE WORKFLOW
+# CHANGES TO THIS FILE WILL BE LOST EVERY TIME YOU UPDATE THE WORKFLOW
+#
+# -------------------------------------------------
+
+# Menu search can have individual settings per app for even more fine grained 
+# control over how menu items are fetched and displayed for that app
+
+# The configuration is specified using one or more `appFilters` blocks
+
+# Any app specific filter will override the workflow's environment 
+# related settings 
+
+# Format of an appFilters section
+#
+# appFilters {
+#
+# this is the app name, the same name as in the cache folder
+#
+#   app: "Safari" 
+#
+# this controls whether menu items that 
+# are disabled should be included in the listing
+# false by default
+#
+#   showDisabledMenuItems: true     
+#
+#
+# controls if the apple menu items should be included
+# false by default
+#   showAppleMenu: true             
+#
+# if you wish to disable menu search completely, include this
+#
+#   disabled: true     
+#
+#
+# specifies the cache timeout duration of menu items in seconds
+# this must be a number with a decimal place
+# if the value is 0 or less than zero, caching of menu items is disabled
+# for an app that has a static menu structure, it is best to specify
+# a very large value here, e.g. cacheDuration: 18000.0 # for 5 hours
+#
+#   cacheDuration: 0.0
+#
+# you can restrict menu items from root menus to not appear in search results
+#
+#   The following will ignore all items under "File" and "Edit > Modify" menus
+#   You can specify multiple ignoreMenuPaths sections
+#   
+#   ignoreMenuPaths {
+#       path: "File"   
+#   }
+#   ignoreMenuPaths {
+#       path: "Edit"
+#       path: "Modify"   
+#   }
+#
+# }
+
+
+# Below you can see a sample configuration for 3 apps
+# - one which always includes disabled menu items
+# - one which skips the History and Bookmarks menu entries
+# - one app for which menu search is entirely disabled
+
+appFilters {
+  app: "BibDesk"
+  showDisabledMenuItems: true
+}
+
+appFilters {
+    app: "Safari"
+    ignoreMenuPaths {
+        path: "History"
+    }
+    ignoreMenuPaths {
+        path: "Bookmarks"
+    }
+}
+
+appFilters {
+    app: "Google Chrome"
+    disabled: true
+}
+
