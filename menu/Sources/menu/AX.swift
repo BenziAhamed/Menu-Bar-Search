@@ -44,10 +44,10 @@ let virtualKeys = [
     0x75: "⌦", // kVK_ForwardDelete
     0x77: "↘", // kVK_End
     0x79: "⇟", // kVK_PageDown
-    0x7b: "←", // kVK_LeftArrow
-    0x7c: "→", // kVK_RightArrow
-    0x7d: "↓", // kVK_DownArrow
-    0x7e: "↑", // kVK_UpArrow
+    0x7b: "◀︎", // kVK_LeftArrow
+    0x7c: "▶︎", // kVK_RightArrow
+    0x7d: "▼", // kVK_DownArrow
+    0x7e: "▲", // kVK_UpArrow
 ]
 
 // let halfWidthSpace = " " // "🌐"

@@ -53,7 +53,7 @@ let createInt: (String)->Int? = { Int($0) }
 let createInt32: (String)->Int32? = { Int32($0) }
 let createBool: (String)->Bool? = { Bool($0) }
 let createDouble: (String)->Double? = { Double($0) }
-let createBoolFromInt: (String)->Bool? = { (value) in
+let createBoolFromInt: (String)->Bool? = { value in
     if let v = Int(value), v == 1 {
         return true
     }
@@ -145,17 +145,24 @@ while let arg = current {
 
     case "-show-folders":
         let a = Alfred()
-        a.add(AlfredResultItem.with { $0.title = "Settings Folder"; $0.arg = Alfred.data() })
+        let icon = AlfredResultItemIcon.with { $0.path = "icon.settings.png" }
+        a.add(AlfredResultItem.with {
+            $0.title = "Settings Folder"
+            $0.arg = Alfred.data()
+            $0.icon = icon
+        })
         if !FileManager.default.fileExists(atPath: Alfred.data(path: "settings.txt")) {
             a.add(AlfredResultItem.with {
                 $0.title = "View a sample Settings file"
                 $0.subtitle = "You can use this as a reference to customise per app configuration"
                 $0.arg = "sample settings.txt"
+                $0.icon = icon
             })
         }
         a.add(AlfredResultItem.with {
             $0.title = "Cache Folder"
             $0.arg = Alfred.cache()
+            $0.icon = icon
         })
 //        for cache in Cache.getCachedMenuControls() {
 //            let expiry = Date(timeIntervalSince1970: cache.control.timeout)
@@ -427,6 +434,7 @@ if a.results.items.count == 0 {
     // a.add(.with { item in item.title = "No menu items" })
     a.add(AlfredResultItem.with {
         $0.title = "No menu items"
+        $0.icon = .with { $0.path = "icon.error.png" }
     })
 }
 
