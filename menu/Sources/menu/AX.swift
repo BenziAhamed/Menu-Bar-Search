@@ -50,14 +50,17 @@ let virtualKeys = [
     0x7e: "↑", // kVK_UpArrow
 ]
 
+// let halfWidthSpace = " " // "🌐"
+let halfWidthSpace = ""
+
 func decode(modifiers: Int) -> String {
-    if modifiers == 0x18 { return "fn fn" }
-    var result = ""
-    if (modifiers & 0x04) > 0 { result.append("^") }
+    if modifiers == 0x18 { return "fn" }
+    var result = [String]()
+    if (modifiers & 0x04) > 0 { result.append("⌃") }
     if (modifiers & 0x02) > 0 { result.append("⌥") }
     if (modifiers & 0x01) > 0 { result.append("⇧") }
     if (modifiers & 0x08) == 0 { result.append("⌘") }
-    return result
+    return result.joined(separator: halfWidthSpace)
 }
 
 func getShortcut(_ cmd: String?, _ modifiers: Int, _ virtualKey: Int) -> String {
@@ -74,7 +77,7 @@ func getShortcut(_ cmd: String?, _ modifiers: Int, _ virtualKey: Int) -> String 
     }
     let mods = decode(modifiers: modifiers)
     if let s = shortcut {
-        shortcut = mods + s
+        shortcut = mods + halfWidthSpace + s
     }
     return shortcut ?? ""
 }
