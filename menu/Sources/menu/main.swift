@@ -86,7 +86,7 @@ while let arg = current {
         advance()
         if let arg = current {
             advance()
-            query = arg.lowercased()
+            query = arg.folding(options: [.diacriticInsensitive, .caseInsensitive, .widthInsensitive], locale: nil)
         }
 
     case "-max-depth":
@@ -348,7 +348,7 @@ if !query.isEmpty {
                 // for the last item alone, do a fuzzy match
                 // along with normal ranked search
                 var level = menu.path.count - 1
-                let name = menu.path[level].lowercased()
+                let name = menu.searchPath[level].lowercased()
                 let rank = name.textMatch(term: term)
                 var rankAdjust = 4096
                 if rank == 100 {
@@ -366,7 +366,7 @@ if !query.isEmpty {
                 level -= 1
                 while level >= 0 {
                     rankAdjust /= 2
-                    let r = menu.path[level].lowercased().textMatch(term: term)
+                    let r = menu.searchPath[level].textMatch(term: term)
                     if r > 0 {
                         return (menu, r + rankAdjust)
                     }

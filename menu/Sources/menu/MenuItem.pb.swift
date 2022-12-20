@@ -59,6 +59,8 @@ struct MenuItem {
 
   var path: [String] = []
 
+  var searchPath: [String] = []
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -259,6 +261,7 @@ extension MenuItem: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     1: .same(proto: "pathIndices"),
     2: .same(proto: "shortcut"),
     3: .same(proto: "path"),
+    4: .same(proto: "searchPath"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -270,6 +273,7 @@ extension MenuItem: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       case 1: try { try decoder.decodeSingularStringField(value: &self.pathIndices) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self.shortcut) }()
       case 3: try { try decoder.decodeRepeatedStringField(value: &self.path) }()
+      case 4: try { try decoder.decodeRepeatedStringField(value: &self.searchPath) }()
       default: break
       }
     }
@@ -285,6 +289,9 @@ extension MenuItem: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     if !self.path.isEmpty {
       try visitor.visitRepeatedStringField(value: self.path, fieldNumber: 3)
     }
+    if !self.searchPath.isEmpty {
+      try visitor.visitRepeatedStringField(value: self.searchPath, fieldNumber: 4)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -292,6 +299,7 @@ extension MenuItem: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     if lhs.pathIndices != rhs.pathIndices {return false}
     if lhs.shortcut != rhs.shortcut {return false}
     if lhs.path != rhs.path {return false}
+    if lhs.searchPath != rhs.searchPath {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

@@ -15,6 +15,7 @@ message MenuItem {
 string pathIndices = 1;
 string shortcut = 2;
 repeated string path = 3;
+repeated string searchPath = 4;
 }
 
 
