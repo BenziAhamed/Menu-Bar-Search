@@ -1,42 +1,35 @@
-# Menu Bar Search Alfred Workflow
+# <img src='assets/icon.png' width='35' align='center' alt='icon'> Menu Bar Search - An Alfred Workflow
 
-![logo](menu-search.png)
+Quickly search through menu options of the front-most application. [↓ Download](https://github.com/BenziAhamed/Menu-Bar-Search/releases/latest/download/Menu.Bar.Search.alfredworkflow)
 
-Quickly search through menu options of the front-most application.
+<span>
+  <img src='assets/finder.png' width='450' alt='finder'> 
+  <img src='assets/photos.png' width='450' alt='photos'> 
+  <img src='assets/music.png' width='450' alt='music'>
+  <img src='assets/search.png' width='450' alt='search' align='top'>
+</span>
 
-> Based on the implementation of [ctwise's Menu Bar Search](https://www.alfredforum.com/topic/1993-menu-search/).
+### Running on macOS Catalina and beyond (v1.8+)
+If you face issues from Catalina or beyond, in relation to not being able to run the workflow due to security issues (e.g. malicious software checks), have a look at https://github.com/BenziAhamed/Menu-Bar-Search/issues/4 for possible workarounds.
 
-## Downloads
-
-[↓ Download latest](https://github.com/BenziAhamed/Menu-Bar-Search/releases/latest/download/Menu.Bar.Search.alfredworkflow)
-
-### Running on macOS Catalina and beyond (for v1.8)
-> If you face issues from Catalina or beyond, in relation to not being able to run the workflow due to security issues (e.g. malicious software checks),
-> have a look at https://github.com/BenziAhamed/Menu-Bar-Search/issues/4 for possible workarounds.
-> 
-> I am aware of this outstanding issue and will fix it.
+> I am working to fix and resolve this.
 
 ## Usage
 
-Type `m` in Alfred to list menu bar items for front most application
-You can filter menu items by name, or do a fuzzy search.
+- Type `m` in Alfred to list menu bar items for front most application.
+- You can filter menu items by name, or do a fuzzy search.
+- Alternatively, set a hotkey to trigger the workflow as well.
 
 E.g
 
 - `m new tab` will match the menu item **New Tab**
 - `m cw` will match the menu item **Close Window**
 
-## Releases
-
-Download previous versions from [Github releases](https://github.com/BenziAhamed/Menu-Bar-Search/releases).
 
 ## Change log
 
 - 1.0 - Initial Release
 - 1.1 - Added Fuzzy Text Matching for Menus
-
-  If you have a menu item `New Tab`, then typing `m nt` in Alfred will match `New Tab`, since `n` and `t` matches the first letters of the menu text.
-
 - 1.1.1 - Changed run behaviour to terminate previous script, this makes the experience slightly more faster
 - 1.2 - Completely native menu clicking, removed reliance on AppleScript
   - 1.2.1 - Performance improvements when generating menus using direct JSON encoding
@@ -58,3 +51,7 @@ Download previous versions from [Github releases](https://github.com/BenziAhamed
 - 1.7 - Universal build for M1 and Intel
 - 1.8 - Fixed the universal build
 - 1.9 - changed to user configuration, and signed executable (exported using Alfred 5)
+
+## Credits
+
+- Based on the ctwise's ObjC implementation of [Menu Bar Search](https://www.alfredforum.com/topic/1993-menu-search/), which I've ported over to Swift and added caching and per app configuration to speed things up.
