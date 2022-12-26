@@ -3,10 +3,10 @@
 Quickly search through menu options of the front-most application. [↓ Download](https://github.com/BenziAhamed/Menu-Bar-Search/releases/latest/download/Menu.Bar.Search.alfredworkflow)
 
 <span>
-  <img src='assets/finder.png' width='450' alt='finder'> 
-  <img src='assets/photos.png' width='450' alt='photos'> 
-  <img src='assets/music.png' width='450' alt='music'>
-  <img src='assets/search.png' width='450' alt='search' align='top'>
+  <img src='assets/finder.png' width='33%' alt='finder'> 
+  <img src='assets/photos.png' width='33%' alt='photos'> 
+  <img src='assets/music.png' width='33%' alt='music'>
+  <img src='assets/search.png' width='33%' alt='search' align='top'>
 </span>
 
 ### Running on macOS Catalina and beyond (v1.8+)
