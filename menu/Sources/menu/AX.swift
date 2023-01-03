@@ -109,6 +109,7 @@ func getMenuItems(
     depth: Int = 0,
     options: MenuGetterOptions
 ) {
+    // print(String(repeating: ".", count: depth), "🟢 getMenuItems for", path)
     guard depth < options.maxDepth else { return }
     guard let children = getAttribute(element: element, name: kAXChildrenAttribute) as? [AXUIElement], children.count > 0 else { return }
     var processedChildrenCount = 0
@@ -117,8 +118,10 @@ func getMenuItems(
         
         guard let enabled = getAttribute(element: child, name: kAXEnabledAttribute) as? Bool else { continue }
 
-        guard let name = getAttribute(element: child, name: kAXTitleAttribute) as? String else { continue }
-        guard !name.isEmpty else { continue }
+        // print(String(repeating: ".", count: depth + 1), "🔴 getMenuItems name:", getAttribute(element: child, name: kAXTitleAttribute))
+        guard let title = getAttribute(element: child, name: kAXTitleAttribute) as? String else { continue }
+        guard !title.isEmpty else { continue }
+        let name = title.replacingOccurrences(of: "\n", with: " ").trimmingCharacters(in: CharacterSet.whitespaces)
         guard let children = getAttribute(element: child, name: kAXChildrenAttribute) as? [AXUIElement] else { continue }
         
         if options.dumpInfo {
@@ -140,7 +143,14 @@ func getMenuItems(
             )
         }
         else {
-            if !options.appFilter.showDisabledMenuItems, !enabled { continue }
+            // if !options.appFilter.showDisabledMenuItems, !enabled { continue }
+            guard options.appFilter.showDisabledMenuItems || enabled else {
+                break
+            }
+            
+//            if options.dumpInfo {
+//                print("🟢 adding ", menuPath)
+//            }
             
             // not a sub menu, if we have a path to this item
             let cmd = getAttribute(element: child, name: kAXMenuItemCmdCharAttribute) as? String
@@ -195,18 +205,18 @@ func dumpInfo(element: AXUIElement, name: String, depth: Int) {
         kAXHelpAttribute,
     ])
     
-//    printAttributeInfo("- hierarchy or relationship attributes", [
-//        kAXParentAttribute,
-//        kAXChildrenAttribute,
-//        kAXSelectedChildrenAttribute,
-//        kAXVisibleChildrenAttribute,
-//        kAXWindowAttribute,
-//        kAXTopLevelUIElementAttribute,
-//        kAXTitleUIElementAttribute,
-//        kAXServesAsTitleForUIElementsAttribute,
-//        kAXLinkedUIElementsAttribute,
-//        kAXSharedFocusElementsAttribute,
-//        ])
+    printAttributeInfo("- hierarchy or relationship attributes", [
+        kAXParentAttribute,
+        kAXChildrenAttribute,
+        kAXSelectedChildrenAttribute,
+        kAXVisibleChildrenAttribute,
+        kAXWindowAttribute,
+        kAXTopLevelUIElementAttribute,
+        kAXTitleUIElementAttribute,
+        kAXServesAsTitleForUIElementsAttribute,
+        kAXLinkedUIElementsAttribute,
+        kAXSharedFocusElementsAttribute,
+        ])
     
     printAttributeInfo("- visual state attributes", [
         kAXEnabledAttribute,

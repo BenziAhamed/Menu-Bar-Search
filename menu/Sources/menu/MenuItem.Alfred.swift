@@ -10,7 +10,7 @@ import Foundation
 
 extension MenuItem {
     var arg: String {
-        return "[\(pathIndices)]"
+        return pathIndices
     }
 
     var uid: String {
