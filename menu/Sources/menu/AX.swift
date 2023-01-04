@@ -145,12 +145,15 @@ func getMenuItems(
         else {
             // if !options.appFilter.showDisabledMenuItems, !enabled { continue }
             guard options.appFilter.showDisabledMenuItems || enabled else {
-                break
+                if options.dumpInfo {
+                    print("➖ ignoring ", menuPath)
+                }
+                continue
             }
             
-//            if options.dumpInfo {
-//                print("🟢 adding ", menuPath)
-//            }
+            if options.dumpInfo {
+                print("➕ adding ", menuPath)
+            }
             
             // not a sub menu, if we have a path to this item
             let cmd = getAttribute(element: child, name: kAXMenuItemCmdCharAttribute) as? String
