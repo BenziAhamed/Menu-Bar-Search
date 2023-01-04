@@ -43,9 +43,13 @@ class Alfred {
         return (try? results.jsonString()) ?? "{\"items\":[]}"
     }
     
-    static func quit(_ title: String, _ subtitle: String? = nil) -> Never {
+    static func quit(_ title: String, subtitle: String? = nil, icon: String? = nil) -> Never {
         let a = Alfred()
-        a.add(.with { $0.title = title; $0.subtitle = subtitle ?? "" })
+        a.add(.with {
+            $0.title = title
+            $0.subtitle = subtitle ?? ""
+            $0.icon = AlfredResultItemIcon.with { $0.path = icon ?? "icon.png" }
+        })
         print(a.resultsJson)
         exit(0)
     }

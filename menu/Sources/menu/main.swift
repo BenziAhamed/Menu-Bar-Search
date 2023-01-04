@@ -38,13 +38,13 @@ case .success:
     break
 
 case .apiDisabled:
-    Alfred.quit("Assistive applications are not enabled in System Preferences.", "Is accessibility enabled for Alfred?")
+    Alfred.quit("Assistive applications are not enabled in System Preferences.", subtitle: "Is accessibility enabled for Alfred?")
 
 case .noValue:
-    Alfred.quit("No menu bar", "\(appDisplayName) does not have a native menu bar")
+    Alfred.quit("No menu bar", subtitle: "\(appDisplayName) does not have a native menu bar")
 
 default:
-    Alfred.quit("Could not get menu bar", "An error occured \(menuBar.initState.rawValue)")
+    Alfred.quit("Could not get menu bar", subtitle: "An error occured \(menuBar.initState.rawValue)")
 }
 
 // if we need to click a menu path
@@ -77,7 +77,7 @@ if fm.fileExists(atPath: settingsPath) {
                 let appOverride = settings.appFilters[i]
 
                 if appOverride.disabled {
-                    Alfred.quit("Menu Search disabled for \(appDisplayName)")
+                    Alfred.quit("Menu search disabled!", subtitle: "\(appDisplayName)", icon: "icon.error.png")
                 }
 
                 args.options.appFilter = appOverride
@@ -91,14 +91,14 @@ if fm.fileExists(atPath: settingsPath) {
             }
         }
         catch let error as TextFormatDecodingError {
-            Alfred.quit("\(error)", "Settings Error")
+            Alfred.quit("\(error)", subtitle: "Settings Error")
         }
         catch {
-            Alfred.quit("Invalid settings file", settingsPath)
+            Alfred.quit("Invalid settings file", subtitle: settingsPath)
         }
     }
     else {
-        Alfred.quit("Invalid settings file", settingsPath)
+        Alfred.quit("Invalid settings file", subtitle: settingsPath)
     }
 }
 
