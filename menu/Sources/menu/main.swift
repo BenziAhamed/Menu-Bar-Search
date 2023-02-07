@@ -146,11 +146,28 @@ func render(_ menu: MenuItem) {
         $0.icon.type = apple ? "" : "fileicon"
     })
 }
-
 let r = render // prevent swiftc compiler segfault
+
+func transferToShortcut(from term: inout String) -> () {
+    if !term.hasPrefix("#") || term.count < 2{
+        return
+    } 
+    term = String(term.dropFirst())
+    var res = [String]()
+    if term.contains("ctrl") { res.append("⌃") }
+    if term.contains("alt") { res.append("⌥") }
+    if term.contains("shift") { res.append("⇧") }
+    if term.contains("cmd") { res.append("⌘") }
+    if term.split(separator: " ").last!.count == 1 {
+        term = res.joined(separator: halfWidthSpace) + halfWidthSpace + term.split(separator: " ").last!
+    } else {
+        term = res.joined(separator: halfWidthSpace)
+    }
+}
 
 if !args.query.isEmpty {
     let term = args.query.lowercased()
+    transferToShortcut(from: &term)
     let rankedMenuItems: [(MenuItem, Int)] =
         menuItems
             .lazy
@@ -165,7 +182,7 @@ if !args.query.isEmpty {
                 // for the last item alone, do a fuzzy match
                 // along with normal ranked search
                 var level = menu.path.count - 1
-                let name = menu.searchPath[level].lowercased()
+                let name = menu.searchPath[level].lowercased() + " " + menu.shortcut.lowercased()
                 let rank = name.textMatch(term: term)
                 var rankAdjust = 4096
                 if rank == 100 {
