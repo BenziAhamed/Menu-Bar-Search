@@ -148,26 +148,8 @@ func render(_ menu: MenuItem) {
 }
 let r = render // prevent swiftc compiler segfault
 
-func transferToShortcut(from term: inout String) -> () {
-    if !term.hasPrefix("#") || term.count < 2{
-        return
-    } 
-    term = String(term.dropFirst())
-    var res = [String]()
-    if term.contains("ctrl") { res.append("⌃") }
-    if term.contains("alt") { res.append("⌥") }
-    if term.contains("shift") { res.append("⇧") }
-    if term.contains("cmd") { res.append("⌘") }
-    if term.split(separator: " ").last!.count == 1 {
-        term = res.joined(separator: halfWidthSpace) + halfWidthSpace + term.split(separator: " ").last!
-    } else {
-        term = res.joined(separator: halfWidthSpace)
-    }
-}
-
 if !args.query.isEmpty {
-    let term = args.query.lowercased()
-    transferToShortcut(from: &term)
+    let term = args.query
     let rankedMenuItems: [(MenuItem, Int)] =
         menuItems
             .lazy
