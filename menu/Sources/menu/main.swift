@@ -55,6 +55,11 @@ if let clickIndices = args.clickIndices, clickIndices.count > 0 {
     exit(0)
 }
 
+// check if we need to invalidate cache on empty query
+if args.options.recache, args.query.isEmpty {
+    Cache.invalidate(app: appBundleId)
+}
+
 var settingsModifiedInterval: Double?
 let fm = FileManager.default
 let settingsPath = Alfred.data(path: "settings.txt")
@@ -146,6 +151,7 @@ func render(_ menu: MenuItem) {
         $0.icon.type = apple ? "" : "fileicon"
     })
 }
+
 let r = render // prevent swiftc compiler segfault
 
 if !args.query.isEmpty {
@@ -153,7 +159,7 @@ if !args.query.isEmpty {
     let rankedMenuItems: [(MenuItem, Int)] =
         menuItems
             .lazy
-            .map { (menu: MenuItem)->(MenuItem, Int) in
+            .map { (menu: MenuItem) -> (MenuItem, Int) in
                 // finds the first ranked path component
                 // if we have File -> New Tab
                 // and we enter "file", we must match "file"

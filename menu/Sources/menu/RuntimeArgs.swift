@@ -1,6 +1,6 @@
 //
 //  RuntimeArgs.swift
-//  
+//
 //
 //  Created by Benzi  on 20/12/2022.
 //
@@ -71,11 +71,10 @@ class RuntimeArgs {
     }
 
     func parse() {
-        
         options.maxDepth = 10
         options.maxChildren = 40
         options.appFilter = AppFilter()
-        
+
         while let arg = current {
             switch arg {
             case "-pid":
@@ -86,7 +85,7 @@ class RuntimeArgs {
                 advance()
                 if let arg = current {
                     advance()
-                    query = arg.folding(options: [.diacriticInsensitive, .caseInsensitive, .widthInsensitive], locale: nil);
+                    query = arg.folding(options: [.diacriticInsensitive, .caseInsensitive, .widthInsensitive], locale: nil)
                     query = parseToShortcut(from: query)
                 }
 
@@ -128,6 +127,10 @@ class RuntimeArgs {
                 advance()
                 options.appFilter.showAppleMenu = parse(createBoolFromInt, "Expected 0/1 after -show-apple-menu")
 
+            case "-recache":
+                advance()
+                options.recache = parse(createBoolFromInt, "Expected 0/1 after -recache")
+
             case "-only":
                 advance()
                 guard let specificMenuRoot = current else {
@@ -165,24 +168,24 @@ class RuntimeArgs {
                     $0.arg = Alfred.cache()
                     $0.icon = icon
                 })
-        //        for cache in Cache.getCachedMenuControls() {
-        //            let expiry = Date(timeIntervalSince1970: cache.control.timeout)
-        //            let now = Date()
-        //            let expirationPrefix = expiry > now ? "expires" : "expired"
-        //            if #available(macOS 10.15, *) {
-        //                let formatter = RelativeDateTimeFormatter()
-        //                a.add(AlfredResultItem.with {
-        //                    $0.title = cache.appBundleId
-        //                    $0.subtitle = "\(expirationPrefix): \(formatter.localizedString(for: expiry, relativeTo: Date()))"
-        //                })
-        //            }
-        //            else {
-        //                a.add(AlfredResultItem.with {
-        //                    $0.title = cache.appBundleId
-        //                    $0.subtitle = "\(expirationPrefix): \(expiry)"
-        //                })
-        //            }
-        //        }
+                //        for cache in Cache.getCachedMenuControls() {
+                //            let expiry = Date(timeIntervalSince1970: cache.control.timeout)
+                //            let now = Date()
+                //            let expirationPrefix = expiry > now ? "expires" : "expired"
+                //            if #available(macOS 10.15, *) {
+                //                let formatter = RelativeDateTimeFormatter()
+                //                a.add(AlfredResultItem.with {
+                //                    $0.title = cache.appBundleId
+                //                    $0.subtitle = "\(expirationPrefix): \(formatter.localizedString(for: expiry, relativeTo: Date()))"
+                //                })
+                //            }
+                //            else {
+                //                a.add(AlfredResultItem.with {
+                //                    $0.title = cache.appBundleId
+                //                    $0.subtitle = "\(expirationPrefix): \(expiry)"
+                //                })
+                //            }
+                //        }
                 print(a.resultsJson)
                 exit(0)
 
@@ -194,10 +197,10 @@ class RuntimeArgs {
     }
 }
 
-func parseToShortcut(from _term: String) -> String {
-    if !_term.hasPrefix("#") || _term.count < 2{
+func parseToShortcut(from _term: String)->String {
+    if !_term.hasPrefix("#") || _term.count < 2 {
         return _term
-    } 
+    }
     var term = String(_term.dropFirst()).split(separator: " ").map(String.init)
     var res = [String]()
 
@@ -251,10 +254,10 @@ func parseToShortcut(from _term: String) -> String {
             res.append(key); term.remove(at: index)
         }
     }
-   
+
     if !term.isEmpty {
         res.append(term.joined(separator: halfWidthSpace))
     }
-    
+
     return res.joined(separator: halfWidthSpace)
 }
