@@ -156,62 +156,95 @@ let r = render // prevent swiftc compiler segfault
 
 if !args.query.isEmpty {
     let term = args.query
-    let rankedMenuItems: [(MenuItem, Int)] =
-        menuItems
-            .lazy
-            .map { (menu: MenuItem) -> (MenuItem, Int) in
-                // finds the first ranked path component
-                // if we have File -> New Tab
-                // and we enter "file", we must match "file"
-                // we enter "nt", we must match "new tab"
-                // work our way starting from the leaf menu path
-                // and upwards until a ranked match is found
-
-                // for the last item alone, do a fuzzy match
-                // along with normal ranked search
-                var level = menu.path.count - 1
-                let name = menu.searchPath[level].lowercased() + " " + menu.shortcut.lowercased()
-                let rank = name.textMatch(term: term)
-                var rankAdjust = 4096
-                if rank == 100 {
-                    // only if it starts with
-                    // because fuzzyScore may be larger
-                    return (menu, rank + rankAdjust)
-                }
-                let fuzzyScore = name.fuzzyMatch(term: term)
-                let score = max(fuzzyScore, rank)
-                if score > 0 {
-                    return (menu, score + rankAdjust)
-                }
-
-                // normally rank the other path components
-                level -= 1
-                while level >= 0 {
-                    rankAdjust /= 2
-                    let r = menu.searchPath[level].textMatch(term: term)
-                    if r > 0 {
-                        return (menu, r + rankAdjust)
-                    }
-                    level -= 1
-                }
-
-                // no matches at all
-                return (menu, 0)
+    
+    menuItems
+        .map { (menu: MenuItem) -> (menu: MenuItem, search: (matched: Bool, score: Int)) in
+            var level = menu.path.count - 1
+            let menuText = menu.searchPath[level] + " " + menu.shortcut.lowercased()
+            let search = menuText.fastMatch(term)
+            if search.matched {
+                return (menu, search)
             }
-            .sorted(by: { a, b in a.1 > b.1 })
-
-    // scan through sorted list, add items as long
-    // as we have rank > 0, break off the moment
-    // we reach an item with rank 0
-    var i = 0
-    while i < rankedMenuItems.endIndex {
-        let item = rankedMenuItems[i]
-        if item.1 == 0 {
-            break // all remaining ones will also be ranked 0, since its sorted
+            level -= 1
+            var levelAdjust = 2
+            while level >= 0 {
+                var search = menu.searchPath[level].fastMatch(term)
+                if search.matched {
+                    if search.score > 0 {
+                        search.score /= levelAdjust
+                    } else {
+                        search.score *= levelAdjust
+                    }
+                    return (menu, search)
+                }
+                level -= 1
+                levelAdjust *= 2
+            }
+            return (menu, (false, 0))
         }
-        r(item.0)
-        i += 1
-    }
+        .filter { $0.search.matched }
+        .sorted(by: {$0.search.score > $1.search.score})
+        .forEach { item in
+            r(item.menu)
+        }
+    
+    
+//    let rankedMenuItems: [(MenuItem, Int)] =
+//        menuItems
+//            .lazy
+//            .map { (menu: MenuItem) -> (MenuItem, Int) in
+//                // finds the first ranked path component
+//                // if we have File -> New Tab
+//                // and we enter "file", we must match "file"
+//                // we enter "nt", we must match "new tab"
+//                // work our way starting from the leaf menu path
+//                // and upwards until a ranked match is found
+//
+//                // for the last item alone, do a fuzzy match
+//                // along with normal ranked search
+//                var level = menu.path.count - 1
+//                let name = menu.searchPath[level].lowercased() + " " + menu.shortcut.lowercased()
+//                let rank = name.textMatch(term: term)
+//                var rankAdjust = 4096
+//                if rank == 100 {
+//                    // only if it starts with
+//                    // because fuzzyScore may be larger
+//                    return (menu, rank + rankAdjust)
+//                }
+//                let fuzzyScore = name.fuzzyMatch(term: term)
+//                let score = max(fuzzyScore, rank)
+//                if score > 0 {
+//                    return (menu, score + rankAdjust)
+//                }
+//
+//                // normally rank the other path components
+//                level -= 1
+//                while level >= 0 {
+//                    rankAdjust /= 2
+//                    let r = menu.searchPath[level].textMatch(term: term)
+//                    if r > 0 {
+//                        return (menu, r + rankAdjust)
+//                    }
+//                    level -= 1
+//                }
+//
+//                // no matches at all
+//                return (menu, 0)
+//            }
+//            .sorted(by: { a, b in a.1 > b.1 })
+//
+//    // scan through sorted list, add items as long
+//    // as we have rank > 0, break off the moment
+//    // we reach an item with rank 0
+//    var i = 0
+//    while i < rankedMenuItems.endIndex {
+//        let item = rankedMenuItems[i]
+//        if item.1 == 0 {
+//            break // all remaining ones will also be ranked 0, since its sorted
+//        }
+//        r(item.0)
+//        i += 1
+//    }
 }
 else if args.options.appFilter.showAppleMenu, args.reorderAppleMenuToLast, menuItems.count > 0 {
     // rearrange so that Apple menu items are last
