@@ -9,10 +9,6 @@ Quickly search through menu options of the front-most application. [↓ Download
   <img src='assets/search.png' width='33%' alt='search' align='top'>
 </span>
 
-### Running on macOS Catalina and beyond (v1.8+)
-If you face issues from Catalina or beyond, in relation to not being able to run the workflow due to security issues (e.g. malicious software checks), have a look at https://github.com/BenziAhamed/Menu-Bar-Search/issues/4 for possible workarounds.
-
-> I am working to fix and resolve this.
 
 ## Usage
 
@@ -51,6 +47,7 @@ E.g
 - 1.7 - Universal build for M1 and Intel
 - 1.8 - Fixed the universal build
 - 1.9 - changed to user configuration, and signed executable (exported using Alfred 5)
+- 2.0 - Alfred workflow gallery support! With added shortcut search, brand new configuration settings, tweaks to caching behaviour, brand new icons
 
 ## Credits
 
