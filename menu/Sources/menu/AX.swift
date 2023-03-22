@@ -160,10 +160,10 @@ func getMenuItems(
             var modifiers = 0
             var virtualKey = 0
             if let m = getAttribute(element: child, name: kAXMenuItemCmdModifiersAttribute) {
-                CFNumberGetValue(m as! CFNumber, CFNumberType.longType, &modifiers)
+                CFNumberGetValue((m as! CFNumber), CFNumberType.longType, &modifiers)
             }
             if let v = getAttribute(element: child, name: kAXMenuItemCmdVirtualKeyAttribute) {
-                CFNumberGetValue(v as! CFNumber, CFNumberType.longType, &virtualKey)
+                CFNumberGetValue((v as! CFNumber), CFNumberType.longType, &virtualKey)
             }
             
             var menuItem = MenuItem()

@@ -15,7 +15,15 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .executableTarget(
             name: "menu",
-            dependencies: ["SwiftProtobuf"]),
+            dependencies: ["SwiftProtobuf"],
+            linkerSettings: [
+                .unsafeFlags([
+                    "-Xlinker", "-sectcreate",
+                    "-Xlinker", "__TEXT",
+                    "-Xlinker", "__info_plist",
+                    "-Xlinker", "Sources/Info.plist"
+                ])
+            ]),
         .testTarget(
             name: "menuTests",
             dependencies: ["menu"]),
