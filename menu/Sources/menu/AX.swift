@@ -383,7 +383,8 @@ enum MenuGetter {
             if options.canIgnorePath(path: [name]) { continue }
             
             if let menuRoot = options.specificMenuRoot, name.lowercased() != menuRoot.lowercased() { continue }
-            guard let children = getAttribute(element: item, name: kAXChildrenAttribute) as? [AXUIElement] else { continue }
+            guard let children = getAttribute(element: item, name: kAXChildrenAttribute) as? [AXUIElement],
+                  children.count > 0 else { continue }
             getMenuItems(
                 forElement: children[0],
                 menuItems: &menuItems,
@@ -417,7 +418,8 @@ enum MenuGetter {
             if options.canIgnorePath(path: [name]) { continue }
             
             if let menuRoot = options.specificMenuRoot, name.lowercased() != menuRoot.lowercased() { continue }
-            guard let children = getAttribute(element: item, name: kAXChildrenAttribute) as? [AXUIElement] else { continue }
+            guard let children = getAttribute(element: item, name: kAXChildrenAttribute) as? [AXUIElement],
+                  children.count > 0 else { continue }
             
             q.async(group: group) {
                 var items = [MenuItem]()
